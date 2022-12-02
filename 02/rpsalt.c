@@ -18,6 +18,12 @@
   Win   = 6
 */
 
+int decissionMatrix[3][3] = {
+  {4, 8, 3}, // Opponent A
+  {1, 5, 9}, // Opponent B
+  {7, 2, 6}, // Opponent C
+};
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -38,33 +44,7 @@ int main(int argc, char *argv[]) {
   while(fgets(line, 5, fp)) {
     char opponent, response;
     sscanf(line, "%c %c", &opponent, &response);
-
-    switch (response) {
-      case 'X':
-        score += 1;
-        if (opponent == 'C') {
-          score += 6;
-        } else if (opponent == 'A') {
-          score += 3;
-        }
-        break;
-      case 'Y':
-        score += 2;
-        if (opponent == 'A') {
-          score += 6;
-        } else if (opponent == 'B') {
-          score += 3;
-        }
-        break;
-      case 'Z':
-        score += 3;
-        if (opponent == 'B') {
-          score += 6;
-        } else if (opponent == 'C') {
-          score += 3;
-        }
-        break;
-    }
+    score += decissionMatrix[opponent - 65][response - 88];
   }
 
   fclose(fp);

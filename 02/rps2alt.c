@@ -18,6 +18,12 @@
   Scissors = 3 points
 */
 
+int decissionMatrix[3][3] = {
+  {3, 4, 8}, // Opponent A
+  {1, 5, 9}, // Opponent B
+  {2, 6, 7}, // Opponent C
+};
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -38,38 +44,7 @@ int main(int argc, char *argv[]) {
   while(fgets(line, 5, fp)) {
     char opponent, response;
     sscanf(line, "%c %c", &opponent, &response);
-
-    switch (response) {
-      case 'X': // Lose
-        if (opponent == 'A') {
-          score += 3;
-        } else if (opponent == 'B') {
-          score += 1;
-        } else if (opponent == 'C') {
-          score += 2;
-        }
-        break;
-      case 'Y': // Draw
-        score += 3;
-        if (opponent == 'A') {
-          score += 1;
-        } else if (opponent == 'B') {
-          score += 2;
-        } else if (opponent == 'C') {
-          score += 3;
-        }
-        break;
-      case 'Z': // Win
-        score += 6;
-        if (opponent == 'A') {
-          score += 2;
-        } else if (opponent == 'B') {
-          score += 3;
-        } else if (opponent == 'C') {
-          score += 1;
-        }
-        break;
-    }
+    score += decissionMatrix[opponent - 65][response - 88];
   }
 
   fclose(fp);
