@@ -9,9 +9,9 @@
   C => Scissors
 
   You:
-  X => Rock     = 1 point
-  Y => Paper    = 2 points
-  Z => Scissors = 3 points
+  X => Rock     = 1
+  Y => Paper    = 2
+  Z => Scissors = 3
 
   Loss  = 0
   Draw  = 3

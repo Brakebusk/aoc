@@ -9,9 +9,9 @@
   C => Scissors
 
   You:
-  X => Rock     = 1 point
-  Y => Paper    = 2 points
-  Z => Scissors = 3 points
+  X => Rock     = 1
+  Y => Paper    = 2
+  Z => Scissors = 3
 
   Loss  = 0
   Draw  = 3
@@ -19,9 +19,9 @@
 */
 
 int decissionMatrix[3][3] = {
-  {4, 8, 3}, // Opponent A
-  {1, 5, 9}, // Opponent B
-  {7, 2, 6}, // Opponent C
+  {4, 8, 3}, // A -> {X, Y, Z}
+  {1, 5, 9}, // B -> {X, Y, Z}
+  {7, 2, 6}, // C -> {X, Y, Z}
 };
 
 int main(int argc, char *argv[]) {

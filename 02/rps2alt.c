@@ -13,15 +13,15 @@
   Y => Must draw = 3
   Z => Must win  = 6
 
-  Rock     = 1 point
-  Paper    = 2 points
-  Scissors = 3 points
+  Rock     = 1
+  Paper    = 2
+  Scissors = 3
 */
 
 int decissionMatrix[3][3] = {
-  {3, 4, 8}, // Opponent A
-  {1, 5, 9}, // Opponent B
-  {2, 6, 7}, // Opponent C
+  {3, 4, 8}, // A -> {X, Y, Z}
+  {1, 5, 9}, // B -> {X, Y, Z}
+  {2, 6, 7}, // C -> {X, Y, Z}
 };
 
 int main(int argc, char *argv[]) {

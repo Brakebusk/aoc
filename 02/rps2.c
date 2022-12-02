@@ -13,9 +13,9 @@
   Y => Must draw = 3
   Z => Must win  = 6
 
-  Rock     = 1 point
-  Paper    = 2 points
-  Scissors = 3 points
+  Rock     = 1
+  Paper    = 2
+  Scissors = 3
 */
 
 int main(int argc, char *argv[]) {
