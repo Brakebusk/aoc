@@ -18,7 +18,7 @@
   Win   = 6
 */
 
-int decissionMatrix[3][3] = {
+int scoreMatrix[3][3] = {
   {4, 8, 3}, // A -> {X, Y, Z}
   {1, 5, 9}, // B -> {X, Y, Z}
   {7, 2, 6}, // C -> {X, Y, Z}
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   while(fgets(line, 5, fp)) {
     char opponent, response;
     sscanf(line, "%c %c", &opponent, &response);
-    score += decissionMatrix[opponent - 65][response - 88];
+    score += scoreMatrix[opponent - 65][response - 88];
   }
 
   fclose(fp);
