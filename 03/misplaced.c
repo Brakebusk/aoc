@@ -26,11 +26,9 @@ int main(int argc, char *argv[]) {
     char length = strlen(line);
 
     for (int i = 0; i < length; i++) {
-        char value = line[i];
-        if (value > 90) {
-          value -= 97;
-        } else {
-          value -= 39;
+        char value = line[i] - 39;
+        if (value > 51) {
+            value -= 58;
         }
 
         compartments[i >= (length >> 1)][value] = 1;
