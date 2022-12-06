@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     push(buffer, markerLength, next);
 
     index++;
-    if (checkBuffer(buffer, markerLength)) break;
+    if (index >= markerLength && checkBuffer(buffer, markerLength)) break;
   }
   
   printf("Part X: %d\n", index);
