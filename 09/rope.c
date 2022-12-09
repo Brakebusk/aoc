@@ -17,7 +17,6 @@ void debugVisited(int visited[2][BOARDSIZE][BOARDSIZE]) {
 }
 
 void debugSteps(int knots[LENGTH][2]) {
-  return;
   for (int row = BOARDSIZE - 1 ; row >= 0; row--) {
     for (int col = 0; col < BOARDSIZE; col++) {
         int found = 0;
