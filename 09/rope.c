@@ -19,7 +19,7 @@ void debugVisited(int visited[2][BOARDSIZE][BOARDSIZE]) {
 void debugSteps(int knots[LENGTH][2]) {
   for (int row = BOARDSIZE - 1 ; row >= 0; row--) {
     for (int col = 0; col < BOARDSIZE; col++) {
-        int found = 0;
+        int empty = 1;
         for (int i = 0; i < 10; i++) {
           if (knots[i][0] == col && knots[i][1] == row) {
             if (i == 0) {
@@ -27,11 +27,11 @@ void debugSteps(int knots[LENGTH][2]) {
             } else if (i == 9) {
               printf("T");
             } else printf("%d", i);
-            found = 1;
+            empty = 0;
             break;
           }
         }
-        if (!found) printf(".");
+        if (empty) printf(".");
     }
     printf("\n");
   }
