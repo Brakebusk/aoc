@@ -2,18 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BOARDSIZE 1000
-#define DEBUG 0
+#define BOARDSIZE 40
+#define DEBUG 1
 #define LENGTH 10
 
 void debugVisited(int visited[2][BOARDSIZE][BOARDSIZE]) {
-  for (int col = BOARDSIZE -1; col >= 0; col--) {
-    for (int row = 0 ; row < BOARDSIZE; row++) {
-        printf("%c", visited[1][row][col] ? '#' : '.');
+  for (int p = 0; p < 2; p++) {
+    printf("Part %d visited:\n", p + 1);
+    for (int col = BOARDSIZE -1; col >= 0; col--) {
+      for (int row = 0 ; row < BOARDSIZE; row++) {
+          printf("%c", visited[p][row][col] ? '#' : '.');
+      }
+      printf("\n");
     }
     printf("\n");
   }
-  printf("\n");
 }
 
 void debugSteps(int knots[LENGTH][2]) {
@@ -22,11 +25,7 @@ void debugSteps(int knots[LENGTH][2]) {
         int empty = 1;
         for (int i = 0; i < 10; i++) {
           if (knots[i][0] == col && knots[i][1] == row) {
-            if (i == 0) {
-              printf("H");
-            } else if (i == 9) {
-              printf("T");
-            } else printf("%d", i);
+            printf("%c", i == 0 ? 'H' : i == 9 ? 'T' : i + 48);
             empty = 0;
             break;
           }
@@ -35,7 +34,7 @@ void debugSteps(int knots[LENGTH][2]) {
     }
     printf("\n");
   }
-  printf("\n\n");
+  printf("\n");
 }
 
 void follow(int head[2], int tail[2], int visited[2][BOARDSIZE][BOARDSIZE], int mark) {
@@ -81,7 +80,7 @@ int main(int argc, char *argv[]) {
     int magnitude;
     sscanf(line, "%c %d", &direction, &magnitude);
 
-    if (DEBUG) printf("%c %d\n\n", direction, magnitude);
+    if (DEBUG) printf("~~~~~~~~~~~~~\n%c %d\n\n", direction, magnitude);
 
     switch (direction) {
       case 'U':
@@ -136,7 +135,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (DEBUG) debugVisited(visited);
-  if (DEBUG) printf("Head: (%d, %d)\nTail: (%d, %d)\n", knots[0][0], knots[0][1], knots[9][0], knots[9][1]);
 
   fclose(fp);
 
