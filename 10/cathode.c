@@ -1,9 +1,15 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+void drawCRT(int cycle, int x) {
+  int currentPosition = (cycle - 1) % 40;
+  if (currentPosition == 0) printf("\n");
+  printf("%c", abs(currentPosition - x) <= 1 ? '#' : '.');
+}
+
 int checkInteresting(int cycle, int x) {
+  drawCRT(cycle, x);
   if ((cycle - 20) % 40 == 0) {
     return cycle * x;
   }
@@ -33,7 +39,6 @@ int main(int argc, char *argv[]) {
     char instruction[5] = {0}, value[5] = {0};
     sscanf(line, "%s %[^\n]", instruction, value);
 
-    
     if (strcmp(instruction, "addx") == 0) {
       interestingSum += checkInteresting(cycle++, x);
       interestingSum += checkInteresting(cycle++, x);
@@ -48,5 +53,5 @@ int main(int argc, char *argv[]) {
 
   fclose(fp);
 
-  printf("Part 1: %d\n", interestingSum);
+  printf("\n\nPart 1: %d\n", interestingSum);
 }
