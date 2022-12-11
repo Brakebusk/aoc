@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ROUNDS 20
+#define WORRYREDUCTION 3
+
 struct Monke {
   long inspections;
   long items[50];
@@ -55,7 +58,7 @@ int inspect(struct Monke* monke) {
       exit(EXIT_FAILURE);
   }
 
-  return item / 3;
+  return item / WORRYREDUCTION;
 }
 
 long activityProduct(struct Monke* monkes[10], int monkeCount) {
@@ -160,7 +163,7 @@ int main(int argc, char *argv[]) {
   
   fclose(fp);
 
-  for (int r = 1; r <= 20; r++) {
+  for (int r = 1; r <= ROUNDS; r++) {
     for (int m = 0; m <= monkeCount; m++) {
       struct Monke* monke = monkes[m];
       while (monke->itemCount > 0) {
