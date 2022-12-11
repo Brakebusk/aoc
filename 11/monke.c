@@ -3,8 +3,8 @@
 #include <string.h>
 
 struct Monke {
-  int inspections;
-  int items[50];
+  long inspections;
+  long items[50];
   int itemCount;
 
   char operation;
@@ -58,11 +58,11 @@ int inspect(struct Monke* monke) {
   return item / 3;
 }
 
-int activityProduct(struct Monke* monkes[10], int monkeCount) {
-  int max1 = -1;
-  int max2 = -1;
+long activityProduct(struct Monke* monkes[10], int monkeCount) {
+  long max1 = -1;
+  long max2 = -1;
   for (int m = 0; m <= monkeCount; m++) {
-    int inspections = monkes[m]->inspections;
+    long inspections = monkes[m]->inspections;
     if (inspections > max1) {
       max2 = max1;
       max1 = inspections;
@@ -75,8 +75,8 @@ int activityProduct(struct Monke* monkes[10], int monkeCount) {
 }
 
 void debugMonkeState(struct Monke* monke) {
-  printf("Inspections: %d\nItems: ", monke->inspections);
-  for (int i = 0; i < monke->itemCount; i++) printf(" '%d'", monke->items[i]);
+  printf("Inspections: %lu\nItems: ", monke->inspections);
+  for (int i = 0; i < monke->itemCount; i++) printf(" '%lu'", monke->items[i]);
   printf("\nOperation: '%c' with '%d'\nTest: divisible by '%d'\nIf true -> '%d'\nIf False -> '%d'\n\n", monke->operation, monke->magnitude, monke->test, monke->testTrue, monke->testFalse);
 }
 
@@ -84,7 +84,7 @@ void debugRound(int round, struct Monke* monkes[10], int monkeCount) {
   printf("After round %d:\n", round);
   for (int i = 0; i <= monkeCount; i++) {
     printf("Monke %d:", i);
-    for (int j = 0; j < monkes[i]->itemCount; j++) printf(" '%d'", monkes[i]->items[j]);
+    for (int j = 0; j < monkes[i]->itemCount; j++) printf(" '%lu'", monkes[i]->items[j]);
     printf("\n");
   }
   printf("\n");
@@ -160,10 +160,6 @@ int main(int argc, char *argv[]) {
   
   fclose(fp);
 
-  //for (int i = 0; i <= monkeCount; i++) {
-  //  debugMonkeState(monkes[i]);
-  //}
-
   for (int r = 1; r <= 20; r++) {
     for (int m = 0; m <= monkeCount; m++) {
       struct Monke* monke = monkes[m];
@@ -175,5 +171,5 @@ int main(int argc, char *argv[]) {
     debugRound(r, monkes, monkeCount);
   }
 
-  printf("Part 1: %d\n", activityProduct(monkes, monkeCount));
+  printf("Part 1: %lu\n", activityProduct(monkes, monkeCount));
 }
