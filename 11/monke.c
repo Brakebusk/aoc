@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ROUNDS 20
-#define WORRYREDUCTION 3
+#define ROUNDS 10000
+#define WORRYREDUCTION 0
 
 struct Monke {
   long inspections;
@@ -25,12 +25,12 @@ struct Monke* spawnMonke() {
   return m;
 }
 
-void push(struct Monke* monke, int value) {
+void push(struct Monke* monke, long value) {
   monke->items[monke->itemCount++] = value;
 }
 
-int pop(struct Monke* monke) {
-  int value = monke->items[0];
+long pop(struct Monke* monke) {
+  long value = monke->items[0];
   for (int i = 0; i < monke->itemCount - 1; i++) {
     monke->items[i] = monke->items[i+1];
   }  
@@ -38,9 +38,9 @@ int pop(struct Monke* monke) {
   return value;
 }
 
-int inspect(struct Monke* monke) {
+long inspect(struct Monke* monke, int lcm) {
   monke->inspections++;
-  int item = pop(monke);
+  long item = pop(monke);
 
   switch (monke->operation) {
     case '+':
@@ -58,12 +58,12 @@ int inspect(struct Monke* monke) {
       exit(EXIT_FAILURE);
   }
 
-  return item / WORRYREDUCTION;
+  return WORRYREDUCTION ? item / WORRYREDUCTION : item % lcm;
 }
 
 long activityProduct(struct Monke* monkes[10], int monkeCount) {
-  long max1 = -1;
-  long max2 = -1;
+  long max1 = 0;
+  long max2 = 0;
   for (int m = 0; m <= monkeCount; m++) {
     long inspections = monkes[m]->inspections;
     if (inspections > max1) {
@@ -77,9 +77,18 @@ long activityProduct(struct Monke* monkes[10], int monkeCount) {
   return max1 * max2;
 }
 
+int findLCM(int a, int b) {
+  int max = (a > b) ? a : b;
+
+  while (1) {
+    if ((max % a == 0) && (max % b == 0)) return max;
+    max++;
+  }
+}
+
 void debugMonkeState(struct Monke* monke) {
-  printf("Inspections: %lu\nItems: ", monke->inspections);
-  for (int i = 0; i < monke->itemCount; i++) printf(" '%lu'", monke->items[i]);
+  printf("Inspections: %ld\nItems: ", monke->inspections);
+  for (int i = 0; i < monke->itemCount; i++) printf(" '%ld'", monke->items[i]);
   printf("\nOperation: '%c' with '%d'\nTest: divisible by '%d'\nIf true -> '%d'\nIf False -> '%d'\n\n", monke->operation, monke->magnitude, monke->test, monke->testTrue, monke->testFalse);
 }
 
@@ -87,7 +96,7 @@ void debugRound(int round, struct Monke* monkes[10], int monkeCount) {
   printf("After round %d:\n", round);
   for (int i = 0; i <= monkeCount; i++) {
     printf("Monke %d:", i);
-    for (int j = 0; j < monkes[i]->itemCount; j++) printf(" '%lu'", monkes[i]->items[j]);
+    for (int j = 0; j < monkes[i]->itemCount; j++) printf(" '%ld'", monkes[i]->items[j]);
     printf("\n");
   }
   printf("\n");
@@ -163,16 +172,20 @@ int main(int argc, char *argv[]) {
   
   fclose(fp);
 
+  int lcm = 1;
+  for (int m = 0; m <= monkeCount; m++) {
+    lcm = findLCM(lcm, monkes[m]->test);
+  }
+
   for (int r = 1; r <= ROUNDS; r++) {
     for (int m = 0; m <= monkeCount; m++) {
       struct Monke* monke = monkes[m];
       while (monke->itemCount > 0) {
-        int item = inspect(monke);
+        long item = inspect(monke, lcm);
         push(monkes[item % monke->test == 0 ? monke->testTrue : monke->testFalse], item);
       }
     }
-    debugRound(r, monkes, monkeCount);
   }
 
-  printf("Part 1: %lu\n", activityProduct(monkes, monkeCount));
+  printf("Part X: %ld\n", activityProduct(monkes, monkeCount));
 }
