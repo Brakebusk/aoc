@@ -74,14 +74,14 @@ void defineStartEnd(struct Board *board) {
       if (value == 'S') {
         start->row = r;
         start->col = c;
-        board->position = start;
+        board->goal = start;
         setValue(board, r, c, 'a');
-        setDistance(board, r, c, 0);
       } else if (value == 'E') {
         goal->row = r;
         goal->col = c;
-        board->goal = goal;
+        board->position = goal;
         setValue(board, r, c, 'z');
+        setDistance(board, r, c, 0);
       }
     }
   }
@@ -107,7 +107,7 @@ struct Neighbors* findAccessibleUnvisitedNeighbors(struct Board *board) {
         nC >= 0 &&
         nC < board->width &&
         getVisited(board, nR, nC) == 0 &&
-        getValue(board, nR, nC) - currentValue <= 1) {
+        currentValue - getValue(board, nR, nC) <= 1) {
           neighbors->neighbors[neighbors->count].row = nR;
           neighbors->neighbors[neighbors->count].col = nC;
           neighbors->count++;
@@ -214,4 +214,15 @@ int main(int argc, char *argv[]) {
   }
   
   printf("Part 1: %d\n", getDistance(board, board->position->row, board->position->col));
+
+  int smallesAZDistance = INT_MAX;
+  for (int r = 0; r < board->height; r++) {
+    for (int c = 0; c < board->width; c++) {
+      int distance;
+      if (getValue(board, r, c) == 'a' && (distance = getDistance(board, r, c)) < smallesAZDistance) {
+        smallesAZDistance = distance;
+      }
+    }
+  }
+  printf("Part 2: %d\n", smallesAZDistance);
 }
