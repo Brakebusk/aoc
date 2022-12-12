@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 struct Coordinate {
   int row;
@@ -19,6 +20,11 @@ struct Board {
   struct Square **squares;
   struct Coordinate *position;
   struct Coordinate *goal;
+};
+
+struct Neighbors {
+  struct Coordinate neighbors[4];
+  int count;
 };
 
 struct Board* createBoard(int width) {
@@ -49,8 +55,8 @@ void setValue(struct Board *board, int row, int col, char value) {
   board->squares[row * board->width + col]->value = value;
 }
 
-void setVisited(struct Board *board, int row, int col, char value) {
-  board->squares[row * board->width + col]->visited = value;
+void setVisited(struct Board *board, int row, int col ) {
+  board->squares[row * board->width + col]->visited = 1;
 }
 
 void setDistance(struct Board *board, int row, int col, int distance) {
@@ -64,11 +70,13 @@ void defineStartEnd(struct Board *board) {
   for (int r = 0; r < board->height; r++) {
     for (int c = 0; c < board->width; c++) {
       char value = getValue(board, r, c);
+      setDistance(board, r, c, INT_MAX);
       if (value == 'S') {
         start->row = r;
         start->col = c;
         board->position = start;
         setValue(board, r, c, 'a');
+        setDistance(board, r, c, 0);
       } else if (value == 'E') {
         goal->row = r;
         goal->col = c;
@@ -77,6 +85,53 @@ void defineStartEnd(struct Board *board) {
       }
     }
   }
+}
+
+struct Neighbors* findAccessibleUnvisitedNeighbors(struct Board *board) {
+  struct Neighbors *neighbors = malloc(sizeof(struct Neighbors));
+  neighbors->count = 0;
+
+  int currentRow = board->position->row;
+  int currentCol = board->position->col;
+  char currentValue = getValue(board, currentRow, currentCol);
+
+  int deltaX[4] = {0, 1, 0, -1};
+  int deltaY[4] = {-1, 0, 1, 0};
+
+  for (int i = 0; i < 4; i++) {
+    int nR = currentRow + deltaY[i];
+    int nC = currentCol + deltaX[i];
+
+    if (nR >= 0 && 
+        nR < board->height && 
+        nC >= 0 &&
+        nC < board->width &&
+        getVisited(board, nR, nC) == 0 &&
+        getValue(board, nR, nC) - currentValue <= 1) {
+          neighbors->neighbors[neighbors->count].row = nR;
+          neighbors->neighbors[neighbors->count].col = nC;
+          neighbors->count++;
+    }
+  }
+
+  return neighbors;
+}
+
+void findNextUnvisitedSquare(struct Board *board) {
+  int smallestDistance = INT_MAX;
+  struct Coordinate pos;
+  for (int r = 0; r < board->height; r++) {
+    for (int c = 0; c < board->width; c++) {
+      int distance;
+      if (getVisited(board, r, c) == 0 && (distance = getDistance(board, r, c)) < smallestDistance) {
+        smallestDistance = distance;
+        pos.row = r;
+        pos.col = c;
+      }
+    }
+  }
+  board->position->row = pos.row;
+  board->position->col = pos.col;
 }
 
 void printBoard(struct Board *board) {
@@ -103,7 +158,7 @@ void printDistance(struct Board *board) {
   printf("\n");
   for (int r = 0; r < board->height; r++) {
     for (int c = 0; c < board->width; c++) {
-      printf("%d", getDistance(board, r, c));
+      printf("%d ", getDistance(board, r, c));
     }
     printf("\n");
   }
@@ -139,7 +194,24 @@ int main(int argc, char *argv[]) {
   
   fclose(fp);
 
-  printBoard(board);
-  printVisited(board);
-  printDistance(board);
+  while (board->position->row != board->goal->row || board->position->col != board->goal->col) {
+    struct Coordinate* currentPosition = board->position;
+
+    int currentDistance = getDistance(board, currentPosition->row, currentPosition->col);
+    struct Neighbors* neighbors = findAccessibleUnvisitedNeighbors(board);
+
+    for (int n = 0; n < neighbors->count; n++) {
+      struct Coordinate selected = neighbors->neighbors[n];
+      int selectedDistance = getDistance(board, selected.row, selected.col);
+      if (selectedDistance > currentDistance + 1) {
+        setDistance(board, selected.row, selected.col, currentDistance + 1);
+      }
+    }
+
+    free(neighbors);
+    setVisited(board, currentPosition->row, currentPosition->col);
+    findNextUnvisitedSquare(board);
+  }
+  
+  printf("Part 1: %d\n", getDistance(board, board->position->row, board->position->col));
 }
