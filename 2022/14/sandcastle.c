@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define WIDTH 600
+#define WIDTH 1000
 #define HEIGHT 200
 
 enum Element {
@@ -15,6 +15,8 @@ enum Element {
 struct Slice {
   int sourceX;
   int sourceY;
+  int floor;
+  int part1;
   char grid[HEIGHT][WIDTH];
 };
 
@@ -44,6 +46,8 @@ void parseLine(struct Slice* slice, char* line) {
     int x, y;
     sscanf(token, "%d,%d", &x, &y);
 
+    if (y > slice->floor) slice->floor = y;
+
     if (brushX < 0) {
       brushX = x;
       brushY = y;
@@ -63,15 +67,11 @@ void parseLine(struct Slice* slice, char* line) {
   }
 }
 
-int simulate(struct Slice* slice) {
-  if (get(slice, slice->sourceX, slice->sourceY+1) != Air) return 0;
-
+int simulate(struct Slice* slice, int round) {
   int sandX = slice->sourceX, sandY = slice->sourceY;
 
   while(1) {
-    if (sandY == HEIGHT - 1) {
-      return 0;
-    } else if (get(slice, sandX, sandY + 1) == Air) {
+    if (get(slice, sandX, sandY + 1) == Air) {
       sandY++;
     } else if (get(slice, sandX - 1, sandY + 1) == Air) {
       sandX--;
@@ -81,6 +81,8 @@ int simulate(struct Slice* slice) {
       sandY++;
     } else {
       set(slice, sandX, sandY, Sand);
+      if (sandY > slice->floor && slice->part1 == 0) slice->part1 = round;
+      if (sandX == slice->sourceX && sandY == slice->sourceY) return 0;
       break;
     }
   }
@@ -137,14 +139,16 @@ int main(int argc, char *argv[]) {
     parseLine(slice, line);
   }
 
-  debug(slice, 0, 490, 20);
+  // Add floor
+  for (int x = 0; x < WIDTH; x++) set(slice, x, slice->floor + 2, Rock);
 
   int round = 0;
-  while (simulate(slice) != 0) {
+  while (simulate(slice, round) != 0) {
     round++;
   }
   
   fclose(fp);
 
-  printf("Part 1: %d\n", round);
+  printf("Part 1: %d\n", slice->part1);
+  printf("Part 2: %d\n", round+1);
 }
