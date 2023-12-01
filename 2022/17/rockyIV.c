@@ -7,11 +7,13 @@
 
 struct Cave {
   char cave[HEIGHT][WIDTH];
+  int currentHeight;
 };
 
 struct Cave* createCave() {
   struct Cave* cave = (struct Cave*) malloc(sizeof(struct Cave));
   memset(cave->cave, 0, WIDTH * HEIGHT * sizeof(char));
+  cave->currentHeight = 0;
   return cave;
 }
 
@@ -80,8 +82,33 @@ struct Shape* getNextShape() {
   return &shapes[counter++ % 5];
 }
 
+int checkCollision(struct Cave *cave, struct Shape *shape, int x, int y, char direction) {
+  switch(direction) {
+    case '>':
+      x++;
+      break;
+    case '<':
+      y--;
+      break;
+    default:
+      printf("Sanity: '%c'\n", direction);
+  }
+
+  for (int r = y; r < y + shape->height; r++) {
+    for (int c = x; c < x + shape->width; c++) {
+      if ()
+    }
+  }
+}
+
 void simulate(struct Cave* cave, struct Jet* jet) {
-  return 0;
+  struct Shape *nextShape = getNextShape();
+  int x = cave->currentHeight + 3;
+  int y = 2;
+
+  while(1) {
+
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -106,14 +133,7 @@ int main(int argc, char *argv[]) {
 
   for (int i = 0; i < 2022; i++) simulate(cave, jet);
 
-  for (int r = 0; r < HEIGHT; r++) {
-    for (int c = 0; c < WIDTH; c++) {
-      if (cave->cave[r][c] > 0) {
-        printf("Part 1: %d\n", HEIGHT - r);
-        break;
-      }
-    }
-  }
+  printf("Part 1: %d\n", cave->currentHeight);
   
   fclose(fp);
 }
