@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[200];
   while(fgets(line, 200, fp)) {
@@ -30,28 +31,38 @@ int main(int argc, char *argv[]) {
     int gameId;
     sscanf(lineSegment, "Game %d", &gameId);
 
-    while ((lineSegment = strtok_r(rest, ";", &rest)) && !failed) {
+    int minRed = 0;
+    int minGreen = 0;
+    int minBlue = 0;
+
+    while ((lineSegment = strtok_r(rest, ";", &rest))) {
       char *segmentRest = lineSegment;
       char *token;
-      while ((token = strtok_r(segmentRest, ",", &segmentRest)) && !failed) {
-        char color[10];
+      while ((token = strtok_r(segmentRest, ",", &segmentRest))) {
+        char color[6];
         int value;
         sscanf(token, " %d %s", &value, color);
 
         if (strcmp(color, "red") == 0) {
+          if (value > minRed) {
+            minRed = value;
+          }
           if (value > RED) {
             failed = 1;
-            break;
           }
         } else if (strcmp(color, "green") == 0) {
+          if (value > minGreen) {
+            minGreen = value;
+          }
           if (value > GREEN) {
             failed = 1;
-            break;
           }
         } else if (strcmp(color, "blue") == 0) {
+          if (value > minBlue) {
+            minBlue = value;
+          }
           if (value > BLUE) {
             failed = 1;
-            break;
           }
         } else {
           printf("ERROR: Unknown color: %s\n", color);
@@ -59,9 +70,12 @@ int main(int argc, char *argv[]) {
         }
       }
     }
+    
+    part2 += minRed * minGreen * minBlue;
     if (!failed) part1 += gameId;
   }
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
 
