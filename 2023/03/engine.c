@@ -123,31 +123,31 @@ int main(int argc, char *argv[]) {
     }
   }
 
-    for (int row = 0; row < MATRIX_SIZE; row++) {
-      for (int col = 0; col < MATRIX_SIZE; col++) {
-        char c = matrix[row][col];
-        if (c == '*') {
-          struct number adjacentNumbers[10];
-          int adjacentNumbersCount = 0;
-          for (int i = 0; i < numbersCount; i++) {
-            int value = numbers[i].value;
-            int startX = numbers[i].startX;
-            int endX = numbers[i].endX;
-            int y = numbers[i].y;
+  for (int row = 0; row < MATRIX_SIZE; row++) {
+    for (int col = 0; col < MATRIX_SIZE; col++) {
+      char c = matrix[row][col];
+      if (c == '*') {
+        struct number adjacentNumbers[10];
+        int adjacentNumbersCount = 0;
+        for (int i = 0; i < numbersCount; i++) {
+          int value = numbers[i].value;
+          int startX = numbers[i].startX;
+          int endX = numbers[i].endX;
+          int y = numbers[i].y;
 
-            if (abs(y - row) <= 1) {
-              if (abs(startX - col) <= 1 || abs(endX - col) <= 1) {
-                adjacentNumbers[adjacentNumbersCount++] = numbers[i];
-              }
+          if (abs(y - row) <= 1) {
+            if (abs(startX - col) <= 1 || abs(endX - col) <= 1) {
+              adjacentNumbers[adjacentNumbersCount++] = numbers[i];
             }
           }
+        }
 
-          if (adjacentNumbersCount == 2) {
-            part2 += adjacentNumbers[0].value * adjacentNumbers[1].value;
-          }
+        if (adjacentNumbersCount == 2) {
+          part2 += adjacentNumbers[0].value * adjacentNumbers[1].value;
         }
       }
     }
+  }
 
   printf("Part 1: %d\n", part1);
   printf("Part 2: %d\n", part2);
