@@ -127,7 +127,6 @@ int main(int argc, char *argv[]) {
       for (int col = 0; col < MATRIX_SIZE; col++) {
         char c = matrix[row][col];
         if (c == '*') {
-          printf("\nFound star at %d, %d\n", row, col);
           struct number adjacentNumbers[10];
           int adjacentNumbersCount = 0;
           for (int i = 0; i < numbersCount; i++) {
