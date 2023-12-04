@@ -17,20 +17,21 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   int copies[256] = {0};
 
   char line[256];
   while(fgets(line, 256, fp)) {
     int winCount = 0;
-    int points = 0;
     int winning[100] = {0};
     
     char *token;
     token = strtok(line, ":");
     int cardId;
     sscanf(token, "Card %d", &cardId);
-    copies[cardId]++;
+    part2 += ++copies[cardId];
+    
     token = strtok(NULL, "|");
 
     // Mark winning numbers
@@ -45,25 +46,17 @@ int main(int argc, char *argv[]) {
     rest = token;
     while ((segment = strtok_r(rest, " ", &rest))) {
       int value = atoi(segment);
-      if (winning[value]) {
-        winCount++;
-        if (points) {
-          points *= 2;
-        } else {
-          points = 1;
-        }
-      }
+      winCount += winning[value];
     }
-    part1 += points;
 
+    int points = 0;
     for (int i = 0; i < winCount; i++) {
       copies[1 + cardId + i] += copies[cardId];
+      points += i ? points : 1;
     }
+    part1 += points;
   }
   fclose(fp);
-
-  int part2 = 0;
-  for (int i = 0; i < sizeof(copies) / sizeof(int); i++) part2 += copies[i];
 
   printf("Part 1: %d\n", part1);
   printf("Part 2: %d\n", part2);
