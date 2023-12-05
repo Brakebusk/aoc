@@ -3,6 +3,9 @@
 #include <string.h>
 #include<pthread.h>
 
+#define MAX_THREAD_COUNT 128
+#define THREADS_PER_SEED_RANGE 8
+
 struct map {
   long long destinationRangeStart, 
             sourceRangeStart,
@@ -107,7 +110,7 @@ int main(int argc, char *argv[]) {
             .rangeLength = seeds[i+1]
           };
         }
-        
+
         mode++;
       } else {
         long long dest, source, length;
@@ -144,35 +147,32 @@ int main(int argc, char *argv[]) {
     if (part1 > seeds[s]) part1 = seeds[s];
   }
 
-  pthread_t threads[16];
-  struct arg_struct args[16];
+  pthread_t threads[MAX_THREAD_COUNT];
+  struct arg_struct args[MAX_THREAD_COUNT];
   int threadCount = 0;
-
-  // Prolly does nothing:
-  pthread_attr_t qosAttribute;
-  pthread_attr_init(&qosAttribute);
-  pthread_attr_set_qos_class_np(&qosAttribute, QOS_CLASS_USER_INTERACTIVE, 0);
 
   // Part 2 seed routing
   long long part2 = __LONG_LONG_MAX__;
   for (int sRang = 0; sRang < seedRangeCount; sRang++) {
-    long long rangeStart = seedRanges[sRang].rangeStart;
     long long rangeLength = seedRanges[sRang].rangeLength;
-
-    args[sRang] = (struct arg_struct) {
-      .id = sRang,
-      .rangeStart = rangeStart,
-      .rangeLength = rangeLength,
-      .mapCount = mapCount,
-      .maps = &maps
-    };
-
-    pthread_create(&threads[threadCount++], &qosAttribute, *thread, (void *) &args[sRang]);
+    long long rangeStart = seedRanges[sRang].rangeStart;
+    long long stepLength = rangeLength / THREADS_PER_SEED_RANGE;
+    for (int i = 0; i < THREADS_PER_SEED_RANGE; i++) {
+      args[threadCount] = (struct arg_struct) {
+        .id = threadCount,
+        .rangeStart = rangeStart + i * stepLength,
+        .rangeLength = stepLength,
+        .mapCount = mapCount,
+        .maps = &maps
+      };
+      pthread_create(&threads[threadCount], NULL, thread, (void *) &args[threadCount]);
+      threadCount++;
+    }
   }
 
   printf("All threads created\n");
 
-  long long results[16] = {0};
+  long long results[MAX_THREAD_COUNT] = {0};
   for (int i = 0; i < threadCount; i++) {
     pthread_join(threads[i], (void *) &results[i]);
   }
