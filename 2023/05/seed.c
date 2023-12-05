@@ -54,10 +54,12 @@ int main(int argc, char *argv[]) {
       if (mode == 1) {
         char *token;
         token = strtok(line, ":");
+        // Add part 1 seeds
         while ((token = strtok(NULL, " "))) {
           seeds[seedCount++] = strtoll(token, NULL, 10);
         }
 
+        // Add part 2 seed ranges
         for (int i = 0; i < seedCount; i += 2) {
           seedRanges[seedRangeCount++] = (struct seedRange) {
             .rangeStart = seeds[i],
@@ -76,28 +78,54 @@ int main(int argc, char *argv[]) {
         };
       }
     } else {
-      if (maps[mapCount-1].length > 0) {
-        for (int s = 0; s < seedCount; s++) {
-          for (int m = 0; m < maps[mapCount-1].length; m++) {
-            long long selectedSeed = seeds[s];
-            struct map selectedMap = maps[mapCount-1].maps[m];
-            if (selectedSeed >= selectedMap.sourceRangeStart && selectedSeed <= selectedMap.sourceRangeStart + selectedMap.rangeLength) {
-              seeds[s] = selectedMap.destinationRangeStart + (selectedSeed - selectedMap.sourceRangeStart);
-              break;
-            }
-          }
-        }
-      }
       mapCount++;
       skip = 1;
     }
   }
   fclose(fp);
 
+  // Part 1 seed routing
+  for (int mSet = 0; mSet < mapCount; mSet++) {
+    for (int s = 0; s < seedCount; s++) {
+      for (int m = 0; m < maps[mSet].length; m++) {
+        long long selectedSeed = seeds[s];
+        struct map selectedMap = maps[mSet].maps[m];
+        if (selectedSeed >= selectedMap.sourceRangeStart && selectedSeed < selectedMap.sourceRangeStart + selectedMap.rangeLength) {
+          seeds[s] = selectedMap.destinationRangeStart + (selectedSeed - selectedMap.sourceRangeStart);
+          break;
+        }
+      }
+    }
+  }
+
   long long part1 = __LONG_LONG_MAX__;
   for (int s = 0; s < seedCount; s++) {
     if (part1 > seeds[s]) part1 = seeds[s];
   }
+
+  // Part 2 seed routing
+  long long part2 = __LONG_LONG_MAX__;
+  for (int sRang = 0; sRang < seedRangeCount; sRang++) {
+    printf("Checking seed range %d of %d\n", sRang+1, seedRangeCount);
+    long long rangeStart = seedRanges[sRang].rangeStart;
+    long long rangeLength = seedRanges[sRang].rangeLength;
+    for (long long seed = rangeStart; seed < rangeStart + rangeLength; seed++) {
+      long long currentValue = seed;
+
+      for (int mSet = 0; mSet < mapCount; mSet++) {
+        for (int m = 0; m < maps[mSet].length; m++) {
+          struct map selectedMap = maps[mSet].maps[m];
+          if (currentValue >= selectedMap.sourceRangeStart && currentValue < selectedMap.sourceRangeStart + selectedMap.rangeLength) {
+            currentValue = selectedMap.destinationRangeStart + (currentValue - selectedMap.sourceRangeStart);
+            break;
+          }
+        }
+      }
+
+      if (currentValue < part2) part2 = currentValue;
+    }
+  }
   printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
 }
 
