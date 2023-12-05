@@ -8,6 +8,16 @@ struct map {
             rangeLength;
 };
 
+struct mapArray {
+  int length;
+  struct map maps[50];
+};
+
+struct seedRange {
+  long long rangeStart,
+            rangeLength;
+};
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -25,7 +35,13 @@ int main(int argc, char *argv[]) {
   long long seeds[32];
   int seedCount = 0;
 
-  struct map maps[50];
+  struct seedRange seedRanges[16];
+  int seedRangeCount = 0;
+
+  struct mapArray maps[8];
+  for (int i = 0; i < 8; i++) maps[i] = (struct mapArray) {
+    .length = 0
+  };
   int mapCount = 0;
 
   char line[256];
@@ -41,29 +57,30 @@ int main(int argc, char *argv[]) {
         while ((token = strtok(NULL, " "))) {
           seeds[seedCount++] = strtoll(token, NULL, 10);
         }
-        
-        printf("We have seeds:\n");
-        for (int i = 0; i < seedCount; i++) printf("%lld ", seeds[i]);
-        printf("\n");
+
+        for (int i = 0; i < seedCount; i += 2) {
+          seedRanges[seedRangeCount++] = (struct seedRange) {
+            .rangeStart = seeds[i],
+            .rangeLength = seeds[i+1]
+          };
+        }
         
         mode++;
       } else {
         long long dest, source, length;
         sscanf(line, "%lld %lld %lld", &dest, &source, &length);
-        maps[mapCount++] = (struct map) {
+        maps[mapCount-1].maps[maps[mapCount-1].length++] = (struct map) {
           .destinationRangeStart = dest,
           .sourceRangeStart = source,
           .rangeLength = length
         };
-        printf("Added map: dest: %lld, source: %lld, length: %lld\n", maps[mapCount-1].destinationRangeStart, maps[mapCount-1].sourceRangeStart, maps[mapCount-1].rangeLength);
       }
     } else {
-      printf("Next set\n");
-      if (mapCount > 0) {
+      if (maps[mapCount-1].length > 0) {
         for (int s = 0; s < seedCount; s++) {
-          for (int m = 0; m < mapCount; m++) {
+          for (int m = 0; m < maps[mapCount-1].length; m++) {
             long long selectedSeed = seeds[s];
-            struct map selectedMap = maps[m];
+            struct map selectedMap = maps[mapCount-1].maps[m];
             if (selectedSeed >= selectedMap.sourceRangeStart && selectedSeed <= selectedMap.sourceRangeStart + selectedMap.rangeLength) {
               seeds[s] = selectedMap.destinationRangeStart + (selectedSeed - selectedMap.sourceRangeStart);
               break;
@@ -71,7 +88,7 @@ int main(int argc, char *argv[]) {
           }
         }
       }
-      mapCount = 0;
+      mapCount++;
       skip = 1;
     }
   }
