@@ -24,6 +24,9 @@ int main(int argc, char *argv[]) {
   struct race races[8];
   int raceCount = 0;
 
+  char trueTimeBuffer[32] = {0};
+  char trueDistanceBuffer[32] = {0};
+
   char line[128];
   while(fgets(line, 128, fp)) {
     char *token;
@@ -33,15 +36,20 @@ int main(int argc, char *argv[]) {
     int raceIndex = 0;
     while ((token = strtok(NULL, " "))) {
       if (isTime) {
+        memcpy(&trueTimeBuffer[strlen(trueTimeBuffer)], token, strlen(token));
         races[raceCount++] = (struct race) {
           .time = atoi(token)
         };
       } else {
+        memcpy(&trueDistanceBuffer[strlen(trueDistanceBuffer)], token, strlen(token));
         races[raceIndex++].recordDistance = atoi(token);
       }
     }
   }
   fclose(fp);
+
+  long long trueTime = strtoll(trueTimeBuffer, NULL, 10);
+  long long trueDistance = strtoll(trueDistanceBuffer, NULL, 10);
 
   int part1 = 1;
 
@@ -58,6 +66,14 @@ int main(int argc, char *argv[]) {
     part1 *= areRecordBreaking;
   }
 
+  int part2 = 0;
+
+  for (long long speed = 0; speed < trueTime; speed++) {
+    long long distanceCovered = speed * (trueTime - speed);
+    if (distanceCovered > trueDistance) part2++;
+  }
+
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
 
