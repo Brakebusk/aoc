@@ -59,29 +59,50 @@ int cardSymbolToValue(char symbol) {
 int getHandType(int cards[5]) {
   int counts[15] = {0};
   for (int c = 0; c < 5; c++) counts[cards[c]]++;
+  int jokerCount = counts[1];
+
+  for (int v = 2; v < 15; v++) {
+    if (counts[v]+jokerCount == 5) return 6;
+  }
+
+  for (int v = 2; v < 15; v++) {
+    if (counts[v]+jokerCount == 4) return 5;
+  }
 
   int hasThreeAlike = 0;
   int pairCount = 0;
-  for (int v = 2; v < 15; v++) {
-    if (counts[v] == 5) return 6;
-    if (counts[v] == 4) return 5;
 
-    switch (counts[v]) {
-      case 5:
-        return 6;
-      case 4:
-        return 5;
-      case 3:
-        hasThreeAlike = 1;
-        break;
-      case 2:
-        pairCount++;
-        break;
+  for (int v = 2; v < 15; v++) {
+    if (counts[v]+jokerCount == 3) {
+      hasThreeAlike = 1;
+      if (jokerCount) {
+        counts[v] = 3;
+        jokerCount = 0;
+      }
+      break;
+    }
+  }
+
+  for (int v = 2; v < 15; v++) {
+    if (counts[v]+jokerCount == 2) {
+      pairCount++;
+      if (jokerCount) jokerCount = 0;
     }
   }
 
   if (hasThreeAlike) return pairCount ? 4 : 3;
   return pairCount;
+}
+
+void convertHandsToPart2(struct hand hands[], int handCount) {
+  for (int h = 0; h < handCount; h++) {
+    // Convert jacks to jokers (value = 1)
+    for (int c = 0; c < 5; c++) {
+      if (hands[h].cards[c] == 11) hands[h].cards[c] = 1;
+    }
+
+    hands[h].type = getHandType(hands[h].cards);
+  }
 }
 
 int calculateWinnings(struct hand hands[], int handCount) {
@@ -128,6 +149,11 @@ int main(int argc, char *argv[]) {
 
   int part1 = calculateWinnings(hands, handCount);
 
-  printf("Part 1: %d\n", part1);
-}
+  convertHandsToPart2(hands, handCount);
+  qsort(hands, handCount, sizeof(struct hand), compareHands);
 
+  int part2 = calculateWinnings(hands, handCount);
+
+  printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
+}
