@@ -84,6 +84,16 @@ int getHandType(int cards[5]) {
   return pairCount;
 }
 
+int calculateWinnings(struct hand hands[], int handCount) {
+  int winnings = 0;
+  for (int h = 0; h < handCount; h++) {
+    int rank = h + 1;
+    int bid = hands[h].bid;
+    winnings += rank * bid;
+  }
+  return winnings;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -114,32 +124,9 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  for (int i = 0; i < handCount; i++) {
-    printf("Got hand with bid %d and type %d: ", hands[i].bid, hands[i].type);
-    for (int c = 0; c < 5; c++) {
-      printf("%d ", hands[i].cards[c]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-
   qsort(hands, handCount, sizeof(struct hand), compareHands);
 
-  for (int i = 0; i < handCount; i++) {
-    printf("Got hand with bid %d and type %d: ", hands[i].bid, hands[i].type);
-    for (int c = 0; c < 5; c++) {
-      printf("%d ", hands[i].cards[c]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-
-  int part1 = 0;
-  for (int h = 0; h < handCount; h++) {
-    int rank = h + 1;
-    int bid = hands[h].bid;
-    part1 += rank * bid;
-  }
+  int part1 = calculateWinnings(hands, handCount);
 
   printf("Part 1: %d\n", part1);
 }
