@@ -11,7 +11,7 @@ long long gcd(long long a, long long b) {
 
 long long lcm(int arr[], int n) {
     long long ans = arr[0];
-    for (long long i = 1; i < n; i++) {
+    for (int i = 1; i < n; i++) {
         ans = (((arr[i] * ans)) / (gcd(arr[i], ans)));
     }
     return ans;
