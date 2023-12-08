@@ -2,22 +2,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_char_as_binary(char ch) {
-    for (int i = 7; i >= 0; i--) {
-        printf("%d", (ch >> i) & 1);
+long long gcd(long long a, long long b) {
+    if (a == 0) {
+        return b;
     }
-    printf("\n");
+    return gcd(b % a, a);
 }
 
-void print_unsigned_short_as_binary(unsigned short us) {
-    for (int i = 15; i >= 0; i--) {
-        printf("%d", (us >> i) & 1);
+long long lcm(int arr[], int n) {
+    long long ans = arr[0];
+    for (long long i = 1; i < n; i++) {
+        ans = (((arr[i] * ans)) / (gcd(arr[i], ans)));
     }
-    printf("\n");
+    return ans;
 }
 
 struct node {
   unsigned short next[2];
+};
+
+struct startingLocation {
+  unsigned short location;
+  int steps;
 };
 
 char letterToNumber(char letter) {
@@ -31,6 +37,14 @@ unsigned short nameToCoordinate(char name[]) {
 
   unsigned short result = ((n1 & 0b00011111) << 10) | ((n2 & 0b00011111) << 5) | (n3 & 0b00011111);
   return result;
+}
+
+int isStartingLocation(unsigned short location) {
+  return (location & 0b0000000000011111) == 0;
+}
+
+int isGoal(unsigned short location) {
+  return (location & 0b0000000000011111) == 0b0000000000011001;
 }
 
 int main(int argc, char *argv[]) {
@@ -47,10 +61,13 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
   }
 
-  int steps[512] = {0};
+  int steps[512];
   int stepCount = 0;
 
   struct node grid[27000];
+
+  struct startingLocation locations[16];
+  int locationCount = 0;
 
   char line[512];
   int lineCount = 0;
@@ -60,9 +77,16 @@ int main(int argc, char *argv[]) {
     } else if (lineCount > 1) {
       char from[4] = {0}, left[4] = {0}, right[4] = {0};
       sscanf(line, "%3s = (%3s, %3s)", from, left, right);
-      grid[nameToCoordinate(from)] = (struct node) {
+      unsigned short fromCoordinate = nameToCoordinate(from);
+      grid[fromCoordinate] = (struct node) {
         .next = {nameToCoordinate(left), nameToCoordinate(right)}
       };
+      if (isStartingLocation(fromCoordinate)) {
+        locations[locationCount++] = (struct startingLocation) {
+          .location = fromCoordinate,
+          .steps = 0
+        };
+      }
     }
     lineCount++;
   }
@@ -76,4 +100,14 @@ int main(int argc, char *argv[]) {
     location = grid[location].next[nextStep];
   }
   printf("Part 1: %d\n", step);
+
+
+  int numSteps[16];
+  for (int i = 0; i < locationCount; i++) {
+    while (!isGoal(locations[i].location)) {
+      locations[i].location = grid[locations[i].location].next[steps[locations[i].steps++ % stepCount]];
+    }
+    numSteps[i] = locations[i].steps;
+  }
+  printf("Part 2: %lld\n", lcm(numSteps, locationCount));
 }
