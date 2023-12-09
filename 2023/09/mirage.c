@@ -9,6 +9,13 @@ int areZero(int sequence[], int sequenceLength) {
   return 1;
 }
 
+void rightShift(int sequence[], int sequenceLength) {
+  for (int i = sequenceLength; i > 0; i--) {
+    sequence[i] = sequence[i-1];
+  }
+  sequence[0] = 0;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -24,6 +31,7 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[256];
   while(fgets(line, 256, fp)) {
@@ -50,9 +58,18 @@ int main(int argc, char *argv[]) {
       sequenceLength[i]++;
     }
 
+    for (int i = height; i >= 0; i--) {
+      rightShift(grid[i], sequenceLength[i]++);
+      if (i < height) {
+        grid[i][0] = grid[i][1] - grid[i+1][0];
+      }
+    }
+
     part1 += grid[0][sequenceLength[0]-1];
+    part2 += grid[0][0];
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
