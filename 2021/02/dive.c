@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
   }
 
   int x = 0, depth = 0;
+  int depth2 = 0, aim = 0;
 
   char line[32];
   while(fgets(line, 32, fp)) {
@@ -26,10 +27,13 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(instruction, "forward") == 0) {
       x += magnitude;
+      depth2 += aim * magnitude;
     } else if (strcmp(instruction, "down") == 0) {
       depth += magnitude;
+      aim += magnitude;
     } else if (strcmp(instruction, "up") == 0) {
       depth -= magnitude;
+      aim -= magnitude;
     } else {
       printf("Unknown command '%s'\n", instruction);
       exit(EXIT_FAILURE);
@@ -38,4 +42,5 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   printf("Part 1: %d\n", x * depth);
+  printf("Part 2: %d\n", x * depth2);
 }
