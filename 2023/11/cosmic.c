@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
     for (int g2 = g1 + 1; g2 < galaxyCount; g2++) {
       struct coordinate loc1 = galaxies[g1];
       struct coordinate loc2 = galaxies[g2];
+      
       int taxiCab = abs(loc1.row - loc2.row) + abs(loc1.column - loc2.column);
       part1 += taxiCab;
       part2 += taxiCab;
