@@ -45,8 +45,15 @@ long long count(char springs[], int springCount, int groups[], int groupCount) {
   return result;
 }
 
+struct arg_struct {
+  int *finished;
+  struct arrangement *arr;
+};
+
 void *thread(void *arguments) {
-  struct arrangement *arr = (struct arrangement *)arguments;
+  struct arg_struct *args = (struct arg_struct *)arguments;
+
+  struct arrangement *arr = (struct arrangement *)args->arr;
   int initSpringCount = arr->springCount;
   int initGroupCount = arr->groupCount;
   for (int i = 0; i < 4; i++) {
@@ -58,7 +65,9 @@ void *thread(void *arguments) {
     arr->groupCount += initGroupCount;
   }
 
-  return (void *) count(arr->springs, arr->springCount, arr->groups, arr->groupCount);
+  long long res = count(arr->springs, arr->springCount, arr->groups, arr->groupCount);
+  printf("Finish #%d\n", (*args->finished)++);
+  return (void *) res;
 }
 
 int main(int argc, char *argv[]) {
@@ -99,11 +108,19 @@ int main(int argc, char *argv[]) {
   long long part2 = 0;
 
   pthread_t threads[1024];
+  struct arg_struct args[1024];
   long long results[1024] = {0};
   int threadCount = 0;
+  int finished = 0;
 
   for (int a = 0; a < arrCount; a++) {
-    pthread_create(&threads[threadCount], NULL, thread, (void *) &arrs[a]);
+    part1 += count(arrs[a].springs, arrs[a].springCount, arrs[a].groups, arrs[a].groupCount);
+    
+    args[threadCount] = (struct arg_struct) {
+      .arr = &arrs[a],
+      .finished = &finished
+    };
+    pthread_create(&threads[threadCount], NULL, thread, (void *) &args[threadCount]);
     threadCount++;
   }
 
