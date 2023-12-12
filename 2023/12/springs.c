@@ -3,14 +3,14 @@
 #include <string.h>
 
 struct arrangement {
-  char springs[32];
+  char springs[160];
   int springCount;
-  int groups[16];
+  int groups[80];
   int groupCount;
 };
 
-int check(char springs[32], int springCount, int groups[16], int groupCount) {
-  int trueGroups[32] = {0};
+int check(char springs[160], int springCount, int groups[80], int groupCount) {
+  int trueGroups[80] = {0};
   int trueGroupLength = 1;
 
   for (int s = 0; s < springCount; s++) {
@@ -49,7 +49,11 @@ int countUnknown(struct arrangement arr) {
 
 // Index 0 = LSB
 int getBitValue(int num, int index) {
-    return (num & (1 << index)) != 0;
+  return (num & (1 << index)) != 0;
+}
+
+long long getLongBitValue(long long num, int index) {
+  return (num & (1 << index)) != 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -120,4 +124,49 @@ int main(int argc, char *argv[]) {
   }
 
   printf("Part 1: %d\n", part1);
+
+  int part2 = 0;
+
+  for (int a = 0; a < arrCount; a++) {
+    printf("Crunching a arangement %d ", a+1);
+    int arrResult = 0;
+
+    struct arrangement arr = arrs[a];
+    int initSpringCount = arr.springCount;
+    int initGroupCount = arr.groupCount;
+    for (int i = 0; i < 4; i++) {
+      arr.springs[arr.springCount++] = '?';
+      memcpy(&arr.springs[arr.springCount], arr.springs, initSpringCount);
+      arr.springCount += initSpringCount;
+
+      memcpy(&arr.groups[arr.groupCount], arr.groups, sizeof(int) * initGroupCount);
+      arr.groupCount += initGroupCount;
+    }
+    
+    int unknowns = countUnknown(arr);
+    long long combinations = 1 << unknowns;
+
+    printf("(%lld combinations): ", combinations);
+
+    for (long long cand = 0; cand < combinations; cand++) {
+      char springCandidate[160];
+
+      int unknownIndex = 0;
+      for (int s = 0; s < arr.springCount; s++) {
+        if (arr.springs[s] == '?') {
+          springCandidate[s] = getLongBitValue(cand, unknownIndex++) ? '#' : '.';
+        } else {
+          springCandidate[s] = arr.springs[s];
+        }
+      }
+
+      if(check(springCandidate, arr.springCount, arr.groups, arr.groupCount)) arrResult++;
+    }
+
+    printf("%d\n", arrResult);
+
+    part2 += arrResult;
+  }
+
+  printf("Part 2: %d\n", part2);
 }
