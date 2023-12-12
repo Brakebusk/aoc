@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 struct arrangement {
   char springs[160];
@@ -44,6 +45,22 @@ long long count(char springs[], int springCount, int groups[], int groupCount) {
   return result;
 }
 
+void *thread(void *arguments) {
+  struct arrangement *arr = (struct arrangement *)arguments;
+  int initSpringCount = arr->springCount;
+  int initGroupCount = arr->groupCount;
+  for (int i = 0; i < 4; i++) {
+    arr->springs[arr->springCount++] = '?';
+    memcpy(&arr->springs[arr->springCount], arr->springs, initSpringCount);
+    arr->springCount += initSpringCount;
+  
+    memcpy(&arr->groups[arr->groupCount], arr->groups, sizeof(int) * initGroupCount);
+    arr->groupCount += initGroupCount;
+  }
+
+  return (void *) count(arr->springs, arr->springCount, arr->groups, arr->groupCount);
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -81,23 +98,21 @@ int main(int argc, char *argv[]) {
   long long part1 = 0;
   long long part2 = 0;
 
+  pthread_t threads[1024];
+  long long results[1024] = {0};
+  int threadCount = 0;
+
   for (int a = 0; a < arrCount; a++) {
-    printf("Checking %d\n", a+1);
-    struct arrangement arr = arrs[a];
-    
-    part1 += count(arr.springs, arr.springCount, arr.groups, arr.groupCount);
-    
-    int initSpringCount = arr.springCount;
-    int initGroupCount = arr.groupCount;
-    for (int i = 0; i < 4; i++) {
-      arr.springs[arr.springCount++] = '?';
-      memcpy(&arr.springs[arr.springCount], arr.springs, initSpringCount);
-      arr.springCount += initSpringCount;
-    
-      memcpy(&arr.groups[arr.groupCount], arr.groups, sizeof(int) * initGroupCount);
-      arr.groupCount += initGroupCount;
-    }
-    part2 += count(arr.springs, arr.springCount, arr.groups, arr.groupCount);
+    pthread_create(&threads[threadCount], NULL, thread, (void *) &arrs[a]);
+    threadCount++;
+  }
+
+  for (int i = 0; i < threadCount; i++) {
+    pthread_join(threads[i], (void *) &results[i]);
+  }
+
+  for (int i = 0; i < threadCount; i++) {
+    part2 += results[i];
   }
 
   printf("Part 1: %lld\n", part1);

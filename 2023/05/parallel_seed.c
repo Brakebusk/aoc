@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include<pthread.h>
+#include <pthread.h>
 
 #define MAX_THREAD_COUNT 128
 #define THREADS_PER_SEED_RANGE 8
