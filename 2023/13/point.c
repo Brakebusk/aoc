@@ -13,14 +13,18 @@ int max(int a, int b) {
 void printPattern(char pattern[32][32], int patternHeight, int patternWidth) {
   for (int row = 0; row < patternHeight; row++) {
     for (int col = 0; col < patternWidth; col++) {
-      printf("%d", pattern[row][col]);
+      printf("%c", pattern[row][col] ? '#' : '.');
     }
     printf("\n");
   }
 }
 
+int reverse(char bit) {
+  return bit ? 0 : 1;
+}
+
 // Returns number of columns to the left of reflection point
-int checkVerticalReflection(char pattern[32][32], int patternHeight, int patternWidth) {
+int checkVerticalReflection(char pattern[32][32], int patternHeight, int patternWidth, int exclude) {
   for (int testColumn = 1; testColumn < patternWidth; testColumn++) {
     int testLength = min(testColumn, patternWidth - testColumn);
     int noReflection = 0;
@@ -31,13 +35,13 @@ int checkVerticalReflection(char pattern[32][32], int patternHeight, int pattern
 
       }
     }
-    if (!noReflection) return testColumn;
+    if (!noReflection && testColumn != exclude) return testColumn;
   }
   return 0;
 }
 
 // Returns number of rows above reflection point
-int checkHorizontalReflection(char pattern[32][32], int patternHeight, int patternWidth) {
+int checkHorizontalReflection(char pattern[32][32], int patternHeight, int patternWidth, int exclude) {
   for (int testRow = 1; testRow < patternHeight; testRow++) {
     int testLength = min(testRow, patternHeight - testRow);
     int noReflection = 0;
@@ -48,11 +52,9 @@ int checkHorizontalReflection(char pattern[32][32], int patternHeight, int patte
 
       }
     }
-    if (!noReflection) return testRow;
+    if (!noReflection && testRow != exclude) return testRow;
   }
-  printf("No reflection point?!:\n");
-  printPattern(pattern, patternHeight, patternWidth);
-  exit(EXIT_FAILURE);
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -73,15 +75,41 @@ int main(int argc, char *argv[]) {
   int patternWidth = 0, patternHeight = 0;
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[512];
   while(fgets(line, 512, fp)) {
     int lineLength = strlen(line);
     if (lineLength == 1) {
-      int columns = checkVerticalReflection(pattern, patternHeight, patternWidth);
+      int columns = checkVerticalReflection(pattern, patternHeight, patternWidth, -1);
+      int rows = 0;
       if (columns) {
         part1 += columns;
-      } else part1 += 100 * checkHorizontalReflection(pattern, patternHeight, patternWidth);
+      } else {
+        rows = checkHorizontalReflection(pattern, patternHeight, patternWidth, -1);
+        part1 += 100 * rows;
+      }
+
+      int foundSmudge = 0;
+      for (int row = 0; row < patternHeight; row++) {
+        if (foundSmudge) break;
+        for (int col = 0; col < patternWidth; col++) {
+          pattern[row][col] = reverse(pattern[row][col]);
+          int p2columns = checkVerticalReflection(pattern, patternHeight, patternWidth, columns);
+          int p2rows = checkHorizontalReflection(pattern, patternHeight, patternWidth, rows);
+          pattern[row][col] = reverse(pattern[row][col]);
+
+          if (p2columns) {
+            part2 += p2columns;
+            foundSmudge = 1;
+            break;
+          } else if (p2rows) {
+            part2 += 100 * p2rows;
+            foundSmudge = 1;
+            break;
+          }
+        }
+      }
 
       patternHeight = 0;
       patternWidth = 0;
@@ -97,4 +125,5 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
