@@ -15,10 +15,12 @@ void printBoard(struct board b) {
   }
 }
 
-void mark(struct board b, int winningNumber) {
+void mark(struct board *b, int winningNumber) {
   for (int r = 0; r < 5; r++) {
     for (int c = 0; c < 5; c++) {
-      if (b.grid[r][c] == winningNumber) b.grid[r][c] = -1;
+      if (b->grid[r][c] == winningNumber) {
+        b->grid[r][c] = -1;
+      }
     }
   }
 }
@@ -47,6 +49,17 @@ int isWinning(struct board b) {
   }
 
   return 0;
+}
+
+int calculateScore(struct board b, int winningNumber) {
+  int score = 0;
+  for (int r = 0; r < 5; r++) {
+    for (int c = 0; c < 5; c++) {
+      int value = b.grid[r][c];
+      if (value > 0) score += value;
+    }
+  }
+  return score * winningNumber;
 }
 
 int main(int argc, char *argv[]) {
@@ -94,23 +107,15 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  for (int i = 0; i < winningNumberCount; i++) printf("%d ", winningNumbers[i]);
-  printf("\n");
-
-  for (int b = 0; b < boardCount; b++) {
-    printBoard(boards[b]);
-    printf("\n");
-  }
-
   for (int w = 0; w < winningNumberCount; w++) {
     int winning = winningNumbers[w];
     for (int b = 0; b < boardCount; b++) {
-      mark(boards[b], winning);
+      mark(&boards[b], winning);
     }
 
     for (int b = 0; b < boardCount; b++) {
       if (isWinning(boards[b])) {
-        printf("Board %d is winning\n", b);
+        printf("Part 1: %d\n", calculateScore(boards[b], winning));
         w = winningNumberCount;
         break;
       }
