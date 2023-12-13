@@ -28,7 +28,6 @@ int checkVerticalReflection(char pattern[32][32], int patternHeight, int pattern
       if (noReflection) break;
       for (int col = 0; col < testLength; col++) {
         if (pattern[row][testColumn - col - 1] != pattern[row][testColumn + col]) noReflection = 1;
-
       }
     }
     if (!noReflection && testColumn != exclude) return testColumn;
@@ -45,7 +44,6 @@ int checkHorizontalReflection(char pattern[32][32], int patternHeight, int patte
       if (noReflection) break;
       for (int row = 0; row < testLength; row++) {
         if (pattern[testRow - row -1][col] != pattern[testRow + row][col]) noReflection = 1;
-
       }
     }
     if (!noReflection && testRow != exclude) return testRow;
