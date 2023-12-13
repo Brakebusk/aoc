@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 struct board {
   int grid[5][5];
@@ -15,7 +16,19 @@ void printBoard(struct board b) {
   }
 }
 
+int isDisabled(struct board b) {
+  for (int r = 0; r < 5; r++) {
+    for (int c = 0; c < 5; c++) {
+      if (b.grid[r][c] == -2) {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
 void mark(struct board *b, int winningNumber) {
+  if (isDisabled(*b)) return;
   for (int r = 0; r < 5; r++) {
     for (int c = 0; c < 5; c++) {
       if (b->grid[r][c] == winningNumber) {
@@ -26,6 +39,7 @@ void mark(struct board *b, int winningNumber) {
 }
 
 int isWinning(struct board b) {
+  if (isDisabled(b)) return 0;
   for (int r = 0; r < 5; r++) {
     int winningRow = 1;
     for (int c = 0; c < 5; c++) {
@@ -60,6 +74,14 @@ int calculateScore(struct board b, int winningNumber) {
     }
   }
   return score * winningNumber;
+}
+
+void disableBoard(struct board *b) {
+  for (int r = 0; r < 5; r++) {
+    for (int c = 0; c < 5; c++) {
+      if (b->grid[r][c] == -1) b->grid[r][c] = -2;
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -107,6 +129,9 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
+  int part1 = 0;
+
+  int lastWin[2];
   for (int w = 0; w < winningNumberCount; w++) {
     int winning = winningNumbers[w];
     for (int b = 0; b < boardCount; b++) {
@@ -115,10 +140,14 @@ int main(int argc, char *argv[]) {
 
     for (int b = 0; b < boardCount; b++) {
       if (isWinning(boards[b])) {
-        printf("Part 1: %d\n", calculateScore(boards[b], winning));
-        w = winningNumberCount;
-        break;
+        if (!part1) part1 = calculateScore(boards[b], winning);
+        lastWin[0] = b;
+        lastWin[1] = winning;
+        disableBoard(&boards[b]);
       }
     }
   }
+
+  printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", calculateScore(boards[lastWin[0]], lastWin[1]));
 }
