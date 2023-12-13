@@ -6,10 +6,6 @@ int min(int a, int b) {
   return a > b ? b : a;
 }
 
-int max(int a, int b) {
-  return a > b ? a : b;
-}
-
 void printPattern(char pattern[32][32], int patternHeight, int patternWidth) {
   for (int row = 0; row < patternHeight; row++) {
     for (int col = 0; col < patternWidth; col++) {
@@ -77,8 +73,8 @@ int main(int argc, char *argv[]) {
   int part1 = 0;
   int part2 = 0;
 
-  char line[512];
-  while(fgets(line, 512, fp)) {
+  char line[32];
+  while(fgets(line, 32, fp)) {
     int lineLength = strlen(line);
     if (lineLength == 1) {
       int columns = checkVerticalReflection(pattern, patternHeight, patternWidth, -1);
