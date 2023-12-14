@@ -168,10 +168,8 @@ int main(int argc, char *argv[]) {
     int nextv2 = getNextInHistory(history, historyLength, nextv1, v2);
     int v3 = history[h+2];
     int nextv3 = getNextInHistory(history, historyLength, nextv2, v3);
-    int v4 = history[h+3];
-    int nextv4 = getNextInHistory(history, historyLength, nextv3, v4);
 
-    if (nextv2 - nextv1 == 1 && nextv3 - nextv2 == 1 && nextv3 - nextv4) {
+    if (nextv2 - nextv1 == 1 && nextv3 - nextv2 == 1) {
       for (int i = h; i < nextv1; i++) {
         pattern[patternLength++] = history[i];
       }
