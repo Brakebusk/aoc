@@ -14,6 +14,10 @@ struct beam {
   int direction;
 };
 
+int max(int a, int b) {
+  return a > b ? a : b;
+}
+
 void printGrid (struct tile grid[128][128], int gridSize) {
   printf("Grid:\n");
   for (int row = 0; row < gridSize; row++) {
@@ -25,46 +29,24 @@ void printGrid (struct tile grid[128][128], int gridSize) {
   printf("\n");
 };
 
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    printf("[ERROR] Missing parameter <filename>\n");
-    exit(EXIT_FAILURE);
-  }
-
-  char *filename = argv[1];
-
-  FILE *fp = NULL;
-  if ((fp = fopen(filename, "r")) == NULL) {
-      printf("[ERROR] Failed to open file %s\n", filename);
-      exit(EXIT_FAILURE);
-  }
-
-  struct tile grid[128][128];
-  int gridSize = 0;
-
+int simulate(struct tile grid[128][128], int gridSize, int fromRow, int fromCol, int initialDirection) {
   struct beam beams[1024];
   int beamCount = 0;
-
-  char line[128];
-  int lineCount = 0;
-  while(fgets(line, 128, fp)) {
-    if (!gridSize) gridSize = strlen(line) - 1;
-    for (int col = 0; col < gridSize; col++) {
-      grid[lineCount][col] = (struct tile) {
-        .symbol = line[col], 
-        .energized = 0,
-        .beamDirectionHistory = {0}
-      };
-    }
-    lineCount++;
-  }
-  fclose(fp);
-
-  beams[beamCount++] = (struct beam) {
-    .row = 0,
-    .col = 0,
-    .direction = 1
+    beams[beamCount++] = (struct beam) {
+    .row = fromRow,
+    .col = fromCol,
+    .direction = initialDirection
   };
+
+  for (int row = 0; row < gridSize; row++) {
+    for (int col = 0; col < gridSize; col++) {
+      grid[row][col].energized = 0;
+      grid[row][col].beamDirectionHistory[0] = 0;
+      grid[row][col].beamDirectionHistory[1] = 0;
+      grid[row][col].beamDirectionHistory[2] = 0;
+      grid[row][col].beamDirectionHistory[3] = 0;
+    }
+  }
 
   for (int beamIndex = 0; beamIndex < beamCount; beamIndex++) {
     struct beam currentBeam = beams[beamIndex];
@@ -156,12 +138,57 @@ int main(int argc, char *argv[]) {
       }
     };
   }
-  
-  int part1 = 0;
+
+  int energized = 0;
   for (int row = 0; row < gridSize; row++) {
     for (int col = 0; col < gridSize; col++) {
-      part1 += grid[row][col].energized;
+      energized += grid[row][col].energized;
     }
   }
-  printf("Part 1: %d\n", part1);
+  return energized;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    printf("[ERROR] Missing parameter <filename>\n");
+    exit(EXIT_FAILURE);
+  }
+
+  char *filename = argv[1];
+
+  FILE *fp = NULL;
+  if ((fp = fopen(filename, "r")) == NULL) {
+      printf("[ERROR] Failed to open file %s\n", filename);
+      exit(EXIT_FAILURE);
+  }
+
+  struct tile grid[128][128];
+  int gridSize = 0;
+
+  char line[128];
+  int lineCount = 0;
+  while(fgets(line, 128, fp)) {
+    if (!gridSize) gridSize = strlen(line) - 1;
+    for (int col = 0; col < gridSize; col++) {
+      grid[lineCount][col] = (struct tile) {
+        .symbol = line[col], 
+        .energized = 0,
+        .beamDirectionHistory = {0}
+      };
+    }
+    lineCount++;
+  }
+  fclose(fp);  
+  printf("Part 1: %d\n", simulate(grid, gridSize, 0, 0, 1));
+
+  int part2 = 0;
+  for (int row = 0; row < gridSize; row++) {
+    part2 = max(part2, simulate(grid, gridSize, row, 0, 1));
+    part2 = max(part2, simulate(grid, gridSize, row, gridSize-1, 3));
+  }
+  for (int col = 0; col < gridSize; col++) {
+    part2 = max(part2, simulate(grid, gridSize, 0, col, 2));
+    part2 = max(part2, simulate(grid, gridSize, gridSize-1, col, 0));
+  }
+  printf("Part 2: %d\n", part2);
 }
