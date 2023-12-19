@@ -152,24 +152,16 @@ int main(int argc, char *argv[]) {
             conditionMet = 1;
             break;
           case 'x':
-            if (testCondition(selPart.x, selRule.operator, selRule.value)) {
-              conditionMet = 1;
-            }
+            conditionMet = testCondition(selPart.x, selRule.operator, selRule.value);
             break;
           case 'm':
-            if (testCondition(selPart.m, selRule.operator, selRule.value)) {
-              conditionMet = 1;
-            }
+            conditionMet = testCondition(selPart.m, selRule.operator, selRule.value);
             break;
           case 'a':
-            if (testCondition(selPart.a, selRule.operator, selRule.value)) {
-              conditionMet = 1;
-            }
+            conditionMet = testCondition(selPart.a, selRule.operator, selRule.value);
             break;
           case 's':
-            if (testCondition(selPart.s, selRule.operator, selRule.value)) {
-              conditionMet = 1;
-            }
+            conditionMet = testCondition(selPart.s, selRule.operator, selRule.value);
             break;
           default:
             printf("Unknown variable '%c'\n", selRule.variable);
