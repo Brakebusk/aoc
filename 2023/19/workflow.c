@@ -146,7 +146,36 @@ int main(int argc, char *argv[]) {
       for (int r = 0; r < workflows[currentFlow].ruleCount; r++) {
         struct rule selRule = workflows[currentFlow].rules[r];
 
-        if (!selRule.operator) {
+        int conditionMet = 0;
+        switch (selRule.variable) {
+          case 0:
+            conditionMet = 1;
+            break;
+          case 'x':
+            if (testCondition(selPart.x, selRule.operator, selRule.value)) {
+              conditionMet = 1;
+            }
+            break;
+          case 'm':
+            if (testCondition(selPart.m, selRule.operator, selRule.value)) {
+              conditionMet = 1;
+            }
+            break;
+          case 'a':
+            if (testCondition(selPart.a, selRule.operator, selRule.value)) {
+              conditionMet = 1;
+            }
+            break;
+          case 's':
+            if (testCondition(selPart.s, selRule.operator, selRule.value)) {
+              conditionMet = 1;
+            }
+            break;
+          default:
+            printf("Unknown variable '%c'\n", selRule.variable);
+            exit(EXIT_FAILURE);
+        }
+        if (conditionMet) {
           if (strcmp(selRule.destination, "R") == 0) {
             currentFlow = -1;
             break;
@@ -157,46 +186,6 @@ int main(int argc, char *argv[]) {
           } else {
             currentFlow = findWorkflow(workflows, workflowCount, selRule.destination);
             break;
-          }
-        } else {
-          int conditionMet = 0;
-          switch (selRule.variable) {
-            case 'x':
-              if (testCondition(selPart.x, selRule.operator, selRule.value)) {
-                conditionMet = 1;
-              }
-              break;
-            case 'm':
-              if (testCondition(selPart.m, selRule.operator, selRule.value)) {
-                conditionMet = 1;
-              }
-              break;
-            case 'a':
-              if (testCondition(selPart.a, selRule.operator, selRule.value)) {
-                conditionMet = 1;
-              }
-              break;
-            case 's':
-              if (testCondition(selPart.s, selRule.operator, selRule.value)) {
-                conditionMet = 1;
-              }
-              break;
-            default:
-              printf("Unknown variable '%c'\n", selRule.variable);
-              exit(EXIT_FAILURE);
-          }
-          if (conditionMet) {
-            if (strcmp(selRule.destination, "R") == 0) {
-              currentFlow = -1;
-              break;
-            } else if (strcmp(selRule.destination, "A") == 0) {
-              part1 += getRating(selPart);
-              currentFlow = -1;
-              break;
-            } else {
-              currentFlow = findWorkflow(workflows, workflowCount, selRule.destination);
-              break;
-            }
           }
         }
       }
