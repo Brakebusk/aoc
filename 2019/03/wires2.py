@@ -1,6 +1,4 @@
-import numpy as np
-
-wires = open("input.txt").readlines()
+wires = open("input").readlines()
 
 aOps = wires[0].split(",")
 bOps = wires[1].split(",")
