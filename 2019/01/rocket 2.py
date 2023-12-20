@@ -1,4 +1,4 @@
-stars = open("input.txt").readlines()
+stars = open("input").readlines()
 
 def fuel(f):
     t = 0
