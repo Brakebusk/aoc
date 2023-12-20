@@ -56,4 +56,37 @@ int main(int argc, char *argv[]) {
     }
   }
   printf("Part 1: %d\n", part1);
+
+  memset(houses, 0, sizeof(int) * SIZE * SIZE);
+  for (int offset = 0; offset <= 1; offset++) {
+    x = MID;
+    y = MID;
+    for (int c = offset; c < strlen(line); c += 2) {
+      switch (line[c]) {
+        case '^':
+          y--;
+          break;
+        case '>':
+          x++;
+          break;
+        case 'v':
+          y++;
+          break;
+        case '<':
+          x--;
+          break;
+        default:
+          printf("Unknown character '%c'\n", line[c]);
+      }
+      houses[y][x]++;
+    }
+  }
+
+  int part2 = 0;
+  for (int r = 0; r < SIZE; r++) {
+    for (int c = 0; c < SIZE; c++) {
+      if (houses[r][c]) part2++;
+    }
+  }
+  printf("Part 2: %d\n", part2);
 }
