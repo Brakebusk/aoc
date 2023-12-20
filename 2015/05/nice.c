@@ -29,6 +29,30 @@ int isNice(char *string) {
   return repeating;
 }
 
+int isNiceV2(char *string) {
+  int length = strlen(string);
+
+  int hasPair = 0;
+  for (int c = 0; c < length - 3; c++) {
+    char p11 = string[c];
+    char p12 = string[c+1];
+    for (int c2 = c + 2; c2 < length - 1; c2++) {
+      if (p11 == string[c2] && p12 == string[c2+1]) {
+        hasPair = 1;
+        break;
+      }
+    }
+  }
+  if (!hasPair) return 0;
+
+  for (int c = 0; c < length - 2; c++) {
+    if (string[c] == string[c+2]) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -44,13 +68,16 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[20];
   while(fgets(line, 20, fp)) {
     char *token = strtok(line, "\n");
     part1 += isNice(token);
+    part2 += isNiceV2(token);
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
