@@ -118,21 +118,29 @@ int runProgram(int sourceCode[MEMORY], int noun, int verb, struct queue sourceIn
     debugLog("Running instruction %d", opCode);
     
     switch (opCode) {
-      case 1:
+      case 1: // ADD: Param 3 = param 1 + param 2
         setValue(memory, params[2], getValue(memory, params[0]) + getValue(memory, params[1]));
         instructionPointer += 4;
         break;
-      case 2:
+      case 2: // MUL: Param 3 = param 1 * param 2
         setValue(memory, params[2], getValue(memory, params[0]) * getValue(memory, params[1]));
         instructionPointer += 4;
         break;
-      case 3:
+      case 3: // INP: Param 1 = input
         setValue(memory, params[0], queueGet(&inputQueue));
         instructionPointer += 2;
         break;
-      case 4:
+      case 4: // OUT: Output param 1
         printf("[OUTPUT] %d\n", getValue(memory, params[0]));
         instructionPointer += 2;
+        break;
+      case 5: // JMPT: jump to param 2 if param 1 != 0
+        break;
+      case 6: // JMPF: jump to param 2 if param 1 == 0
+        break;
+      case 7: // LESS param 3 = param 1 < param 2 ? 1 : 0
+        break;
+      case 8: // EQ param 3 = param 1 == param 2
         break;
       case 99:
         halt = 1;
