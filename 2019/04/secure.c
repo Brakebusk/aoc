@@ -11,7 +11,10 @@ int validate(int password, int strict) {
   for (int d = 0; d < 5; d++) {
     if (digits[d] == digits[d+1]) {
       if (strict) {
-        if ((d == 0 || digits[d-1] != digits[d]) && (d == 4 || digits[d+2] != digits[d])) adjacent = 1;
+        if ((d == 0 || digits[d-1] != digits[d]) && 
+            (d == 4 || digits[d+2] != digits[d])) {
+              adjacent = 1;
+        }
       } else {
         adjacent = 1;
       }
