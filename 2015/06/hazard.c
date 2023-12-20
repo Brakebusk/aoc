@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
   }
 
   char grid[1000][1000] = {0};
+  char grid2[1000][1000] = {0};
 
   char line[64];
   while(fgets(line, 64, fp)) {
@@ -64,8 +65,11 @@ int main(int argc, char *argv[]) {
       for (int col = min(b, d); col <= max(b, d); col++) {
         if (mode == 2) {
           grid[row][col] = !grid[row][col];
+          grid2[row][col] += 2;
         } else {
           grid[row][col] = mode;
+          grid2[row][col] += mode ? 1 : -1;
+          if (grid2[row][col] < 0) grid2[row][col] = 0;
         }
       }
     }
@@ -73,10 +77,13 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   int part1 = 0;
+  int part2 = 0;
   for (int row = 0; row < 1000; row++) {
     for (int col = 0; col < 1000; col++) {
       part1 += grid[row][col];
+      part2 += grid2[row][col];
     }
   }
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
