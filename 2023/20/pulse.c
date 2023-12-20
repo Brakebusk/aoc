@@ -27,6 +27,22 @@ struct pulse {
   int state; // 0 = low, 1 = high;
 };
 
+long long gcd(long long a, long long b) {
+    if (a == 0) {
+        return b;
+    }
+    return gcd(b % a, a);
+}
+
+
+long long lcm(int arr[], int n) {
+    long long ans = arr[0];
+    for (int i = 1; i < n; i++) {
+        ans = (((arr[i] * ans)) / (gcd(arr[i], ans)));
+    }
+    return ans;
+}
+
 void removeFirst(struct pulse *queue, int *queueLength) {
   for (int i = 0; i < *queueLength-1; i++) memcpy(&queue[i], &queue[i+1], sizeof(struct pulse));
   (*queueLength)--;
@@ -127,10 +143,25 @@ int main(int argc, char *argv[]) {
 
   int brodcasterIndex = findModuleByName(network, moduleCount, "broadcaster");
   struct pulse queue[128];
+
+  int rxParent = -1;
+  for (int p = 0; p < moduleCount && rxParent == -1; p++) {
+    for (int out = 0; out < network[p].outConnectionCount; out++) {
+      if (network[p].outConnections[out] == -1) {
+        rxParent = p;
+        break;
+      }
+    }
+  }
+  struct module monitor = network[rxParent];
+  int firstHigh[8] = {0};
+  int monitorReady = 0;
   
   long long pulseCounts[2] = {0};
   
-  for (int push = 0; push < 1000; push++) {
+  int push = 0;
+  while (monitorReady < monitor.inConnectionCount || push < 1000) {
+    push++;
     int queueLength = 1;
     queue[0] = (struct pulse) {
       .source = -1,
@@ -141,7 +172,7 @@ int main(int argc, char *argv[]) {
     while (queueLength) {
       struct pulse p = queue[0];
 
-      pulseCounts[p.state]++;
+      if (push <= 1000) pulseCounts[p.state]++;
       
       struct module destination = network[p.destination];
       switch (destination.type) {
@@ -188,8 +219,18 @@ int main(int argc, char *argv[]) {
           exit(EXIT_FAILURE);
       }
 
+      for (int i = 0; i < monitor.inConnectionCount; i++) {
+        if (network[rxParent].inConnectionStates[i]) {
+          if (!firstHigh[i]) {
+            firstHigh[i] = push;
+            monitorReady++;
+          }
+        }
+      }
+
       removeFirst(queue, &queueLength);
     }
   }
   printf("Part 1: %lld\n", pulseCounts[0] * pulseCounts[1]);
+  printf("Part 2: %lld\n", lcm(firstHigh, monitor.inConnectionCount));
 }
