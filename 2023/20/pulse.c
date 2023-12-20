@@ -174,56 +174,58 @@ int main(int argc, char *argv[]) {
 
       if (push <= 1000) pulseCounts[p.state]++;
       
-      struct module destination = network[p.destination];
-      switch (destination.type) {
-        case 0:
-          for (int out = 0; out < destination.outConnectionCount; out++) {
-            addPulse(queue, &queueLength, (struct pulse) {
-              .source = p.destination,
-              .destination = destination.outConnections[out],
-              .state = p.state
-            });
-          }
-          break;
-        case 1:
-          if (p.state == 0) {
-            network[p.destination].state = !network[p.destination].state;
+      if (p.destination >= 0) {
+        struct module destination = network[p.destination];
+        switch (destination.type) {
+          case 0:
             for (int out = 0; out < destination.outConnectionCount; out++) {
               addPulse(queue, &queueLength, (struct pulse) {
                 .source = p.destination,
                 .destination = destination.outConnections[out],
-                .state = network[p.destination].state
+                .state = p.state
               });
             }
-          }
-          break;
-        case 2:
-          network[p.destination].inConnectionStates[findInconnectionIndex(destination, p.source)] = p.state;
-          int allHigh = 1;
-          for (int in = 0; in < destination.inConnectionCount; in++) {
-            if (!network[p.destination].inConnectionStates[in]) {
-              allHigh = 0;
-              break;
+            break;
+          case 1:
+            if (p.state == 0) {
+              network[p.destination].state = !network[p.destination].state;
+              for (int out = 0; out < destination.outConnectionCount; out++) {
+                addPulse(queue, &queueLength, (struct pulse) {
+                  .source = p.destination,
+                  .destination = destination.outConnections[out],
+                  .state = network[p.destination].state
+                });
+              }
             }
-          }
-          for (int out = 0; out < destination.outConnectionCount; out++) {
-            addPulse(queue, &queueLength, (struct pulse) {
-              .source = p.destination,
-              .destination = destination.outConnections[out],
-              .state = !allHigh
-            });
-          }
-          break;
-        default:
-          printf("Unknown type %d\n", network[p.destination].type);
-          exit(EXIT_FAILURE);
-      }
+            break;
+          case 2:
+            network[p.destination].inConnectionStates[findInconnectionIndex(destination, p.source)] = p.state;
+            int allHigh = 1;
+            for (int in = 0; in < destination.inConnectionCount; in++) {
+              if (!network[p.destination].inConnectionStates[in]) {
+                allHigh = 0;
+                break;
+              }
+            }
+            for (int out = 0; out < destination.outConnectionCount; out++) {
+              addPulse(queue, &queueLength, (struct pulse) {
+                .source = p.destination,
+                .destination = destination.outConnections[out],
+                .state = !allHigh
+              });
+            }
+            break;
+          default:
+            printf("Unknown type %d\n", network[p.destination].type);
+            exit(EXIT_FAILURE);
+        }
 
-      for (int i = 0; i < monitor.inConnectionCount; i++) {
-        if (network[rxParent].inConnectionStates[i]) {
-          if (!firstHigh[i]) {
-            firstHigh[i] = push;
-            monitorReady++;
+        for (int i = 0; i < monitor.inConnectionCount; i++) {
+          if (network[rxParent].inConnectionStates[i]) {
+            if (!firstHigh[i]) {
+              firstHigh[i] = push;
+              monitorReady++;
+            }
           }
         }
       }
