@@ -44,7 +44,7 @@ long long lcm(int arr[], int n) {
 }
 
 void removeFirst(struct pulse *queue, int *queueLength) {
-  for (int i = 0; i < *queueLength-1; i++) memcpy(&queue[i], &queue[i+1], sizeof(struct pulse));
+  memcpy(queue, &queue[1], sizeof(struct pulse) * (*queueLength - 1));
   (*queueLength)--;
 }
 
