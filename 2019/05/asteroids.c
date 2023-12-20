@@ -69,7 +69,6 @@ void setValue(int *memory, int address, int value) {
 }
 
 void parseInstruction(int *opCode, int *parameterModes, int instruction) {
-  debugLog("Parsing instruction %d", instruction);
   int relevant = instruction % 100;
   (*opCode) = relevant;
   instruction /= 100;
