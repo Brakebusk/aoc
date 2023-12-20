@@ -1,4 +1,4 @@
-state = open("input.txt").read().split(",")
+state = open("input").read().split(",")
 state = list(map(int, state))
 
 state[1] = 12

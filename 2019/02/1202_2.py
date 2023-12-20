@@ -1,4 +1,4 @@
-init = state = open("input.txt").read().split(",")
+init = state = open("input").read().split(",")
 init = list(map(int, state))
 
 for noun in range(100):
