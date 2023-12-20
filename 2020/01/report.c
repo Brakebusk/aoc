@@ -26,13 +26,22 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   int part1 = 0;
-  for (int a = 0; a < expenseCount - 1 && !part1; a++) {
-    for (int b = a + 1; b < expenseCount; b++) {
-      if (expenses[a] + expenses[b] == 2020) {
+  int part2 = 0;
+  for (int a = 0; a < expenseCount - 1 && !(part1 && part2); a++) {
+    for (int b = a + 1; b < expenseCount && !(part1 && part2); b++) {
+      if (!part1 && expenses[a] + expenses[b] == 2020) {
         part1 = expenses[a] * expenses[b];
-        break;
+      }
+      if (!part2) {
+        for (int c = b + 1; c < expenseCount; c++) {
+          if (expenses[a] + expenses[b] + expenses[c] == 2020) {
+            part2 = expenses[a] * expenses[b] * expenses[c];
+            break;
+          }
+        }
       }
     }
   }
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
