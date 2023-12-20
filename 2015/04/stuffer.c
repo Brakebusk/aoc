@@ -221,10 +221,10 @@ void md5String(char *input, uint8_t *result){
     memcpy(result, ctx.digest, 16);
 }
 
-int verify(uint8_t hash[16]) {
-  char hexValues[8] = {0};
+int verify(uint8_t hash[16], int required) {
+  char hexValues[7] = {0};
   sprintf(hexValues, "%02hhX%02hhX%02hhX", hash[0], hash[1], hash[2]);
-  for (int c = 0; c < 5; c++) {
+  for (int c = 0; c < required; c++) {
     if (hexValues[c] != '0') return 0;
   }
   return 1;
@@ -244,7 +244,16 @@ int main(int argc, char *argv[]) {
   while (++counter) {
     sprintf(input, "%s%d", key, counter);
     md5String(input, result);
-    if (verify(result)) break;
+    if (verify(result, 5)) break;
   }
   printf("Part 1: %d\n", counter);
+
+  counter = 0;
+  while (++counter) {
+    sprintf(input, "%s%d", key, counter);
+    md5String(input, result);
+    if (verify(result, 6)) break;
+  }
+
+  printf("Part 2: %d\n", counter);
 }
