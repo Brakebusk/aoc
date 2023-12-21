@@ -116,7 +116,7 @@ int getNextInstructionPointer(int currentIP, int paramCount) {
   return currentIP + paramCount + 1;
 }
 
-int runProgram(int sourceCode[MEMORY], struct queue* ioQueue) {
+int runProgram(int sourceCode[MEMORY], struct queue* inputQueue, struct queue* outputQueue) {
   int memory[MEMORY];
   memcpy(memory, sourceCode, sizeof(int) * MEMORY);
 
@@ -141,12 +141,12 @@ int runProgram(int sourceCode[MEMORY], struct queue* ioQueue) {
         instructionPointer = getNextInstructionPointer(instructionPointer, 3);
         break;
       case 3: // INP: Param 1 = input
-        setValue(memory, params[0], queueGet(ioQueue));
+        setValue(memory, params[0], queueGet(inputQueue));
         instructionPointer = getNextInstructionPointer(instructionPointer, 1);
         break;
       case 4: // OUT: Output param 1
         debugLog(1, "Outputting %d", getValue(memory, params[0]));
-        queuePush(ioQueue, getValue(memory, params[0]));
+        queuePush(outputQueue, getValue(memory, params[0]));
         instructionPointer = getNextInstructionPointer(instructionPointer, 1);
         break;
       case 5: // JMPT: jump to param 2 if param 1 != 0
@@ -242,15 +242,18 @@ int main(int argc, char *argv[]) {
 
   int part1 = 0;
   do {
-    struct queue *ioQueue = newQueue(2, sequence[0], 0);
-    
+    struct queue *inputQueue = newQueue(0);
+    struct queue *outputQueue = newQueue(1, 0);
     for (int s = 0; s < 5; s++) {
-      if (s < 4) queuePush(ioQueue, sequence[s+1]);
-      runProgram(program, ioQueue);
-      int inspectOutput = ioQueue->items[ioQueue->length-1];
-      if (inspectOutput > part1) part1 = inspectOutput;
+      queuePush(inputQueue, sequence[s]);
+      queuePush(inputQueue, queueGet(outputQueue));
+      runProgram(program, inputQueue, outputQueue);
     }
-    free(ioQueue);
+    int finalThrust = queueGet(outputQueue);
+    if (finalThrust > part1) part1 = finalThrust;
+
+    free(inputQueue);
+    free(outputQueue);
   } while (next_permutation(sequence, 5));
 
   free(program);
