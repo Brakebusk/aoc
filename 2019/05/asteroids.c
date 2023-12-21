@@ -3,12 +3,13 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define MEMORY 512
+#define MEMORY 1024
 #define MAX_PARAMS 3
 #define MAX_QUEUE_LENGTH 8
-#define DEBUG 1
+#define DEBUG 0
 
 void debugLog(const char *format, ...) {
+    if (!DEBUG) return;
     char *buffer;
     va_list args;
     va_start(args, format);
@@ -98,6 +99,10 @@ void getParameters(int memory[MEMORY], int parameterModes[MAX_PARAMS], int instr
   }
 }
 
+int getNextInstructionPointer(int currentIP, int paramCount) {
+  return currentIP + paramCount + 1;
+}
+
 int runProgram(int sourceCode[MEMORY], int noun, int verb, struct queue sourceInputQueue) {
   int memory[MEMORY];
   memcpy(memory, sourceCode, sizeof(int) * MEMORY);
@@ -116,31 +121,41 @@ int runProgram(int sourceCode[MEMORY], int noun, int verb, struct queue sourceIn
     getParameters(memory, parameterModes, instructionPointer, params);
 
     debugLog("Running instruction %d", opCode);
+
+    int condition;
     
     switch (opCode) {
       case 1: // ADD: Param 3 = param 1 + param 2
         setValue(memory, params[2], getValue(memory, params[0]) + getValue(memory, params[1]));
-        instructionPointer += 4;
+        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
         break;
       case 2: // MUL: Param 3 = param 1 * param 2
         setValue(memory, params[2], getValue(memory, params[0]) * getValue(memory, params[1]));
-        instructionPointer += 4;
+        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
         break;
       case 3: // INP: Param 1 = input
         setValue(memory, params[0], queueGet(&inputQueue));
-        instructionPointer += 2;
+        instructionPointer = getNextInstructionPointer(instructionPointer, 1);
         break;
       case 4: // OUT: Output param 1
         printf("[OUTPUT] %d\n", getValue(memory, params[0]));
-        instructionPointer += 2;
+        instructionPointer = getNextInstructionPointer(instructionPointer, 1);
         break;
       case 5: // JMPT: jump to param 2 if param 1 != 0
+        condition = getValue(memory, params[0]);
+        instructionPointer = condition != 0 ? getValue(memory, params[1]) : getNextInstructionPointer(instructionPointer, 2);
         break;
       case 6: // JMPF: jump to param 2 if param 1 == 0
+        condition = getValue(memory, params[0]);
+        instructionPointer = condition == 0 ? getValue(memory, params[1]) : getNextInstructionPointer(instructionPointer, 2);
         break;
       case 7: // LESS param 3 = param 1 < param 2 ? 1 : 0
+        setValue(memory, params[2], getValue(memory, params[0]) < getValue(memory, params[1]));
+        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
         break;
       case 8: // EQ param 3 = param 1 == param 2
+        setValue(memory, params[2], getValue(memory, params[0]) == getValue(memory, params[1]));
+        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
         break;
       case 99:
         halt = 1;
@@ -185,5 +200,10 @@ int main(int argc, char *argv[]) {
   };
   inputQueue.items[0] = 1;
 
+  printf("Part 1:\n");
+  runProgram(sourceCode, -1, -1, inputQueue);
+
+  inputQueue.items[0] = 5;
+  printf("Part 2:\n");
   runProgram(sourceCode, -1, -1, inputQueue);
 }
