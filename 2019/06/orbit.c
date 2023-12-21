@@ -30,6 +30,22 @@ int totalIndirectOrbitCount(struct object (*objects), int index, int depth) {
   return sum;
 }
 
+int distance(struct object (*objects), int selIndex, int fromIndex, int currentDistance, char *goal) {
+  struct object sel = objects[selIndex];
+
+  if (strcmp(sel.name, goal) == 0) return currentDistance;
+
+  for (int d = 0; d < sel.depCount; d++) {
+    int dep = sel.direct_deps[d];
+    if (dep != fromIndex) {
+      int dist = distance(objects, dep, selIndex, currentDistance + 1, goal);
+      if (dist != -1) return dist;
+    }
+  }
+  if (sel.orbits != fromIndex) return distance(objects, sel.orbits, selIndex, currentDistance + 1, goal);
+  return -1;
+}
+
 int findObjectByName(struct object (*objects), int objectCount, char *name) {
   for (int i = 0; i < objectCount; i++) {
     if (strcmp(name, objects[i].name) == 0) return i;
@@ -82,6 +98,9 @@ int main(int argc, char *argv[]) {
 
   int selected = findObjectByName(objects, objectCount, "COM");
   printf("Part 1: %d\n", totalIndirectOrbitCount(objects, selected, 0));
+
+  int you = findObjectByName(objects, objectCount, "YOU");
+  printf("Part 2: %d\n", distance(objects, you, -1, 0, "SAN") - 2);
 
   free(objects);
 }
