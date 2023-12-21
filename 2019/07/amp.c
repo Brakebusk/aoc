@@ -49,9 +49,16 @@ int queueGet(struct queue* q) {
   return value;
 }
 
-struct queue* newQueue(int firstItem) {
+struct queue* newQueue(int count, ...) {
   struct queue *q = malloc(sizeof(struct queue));
-  if (firstItem != -1) queuePush(q, firstItem);
+
+  va_list args;
+  va_start(args, count);
+  for (int i = 0; i < count; i++) {
+    queuePush(q, va_arg(args, int));
+  }
+  va_end(args);
+
   return q;
 }
 
@@ -203,10 +210,7 @@ int main(int argc, char *argv[]) {
   int *program = readSourceCode(filename);
 
   int sequence[] = {4,3,2,1,0};
-  struct queue *ioQueue = newQueue(-1);
-
-  queuePush(ioQueue, sequence[0]);
-  queuePush(ioQueue, 0);
+  struct queue *ioQueue = newQueue(2, sequence[0], 0);
 
   for (int s = 0; s < 5; s++) {
     if (s < 4) queuePush(ioQueue, sequence[s+1]);
