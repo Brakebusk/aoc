@@ -6,7 +6,7 @@
 #define MEMORY 1024
 #define MAX_PARAMS 3
 #define MAX_QUEUE_LENGTH 8
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 
 void debugLog(int level, const char *format, ...) {
     if (DEBUG_LEVEL < level) return;
@@ -116,16 +116,27 @@ int getNextInstructionPointer(int currentIP, int paramCount) {
   return currentIP + paramCount + 1;
 }
 
-int runProgram(int sourceCode[MEMORY], struct queue* inputQueue, struct queue* outputQueue) {
+struct programState {
+  int instructionPointer;
   int memory[MEMORY];
-  memcpy(memory, sourceCode, sizeof(int) * MEMORY);
+};
 
-  int instructionPointer = 0;
+struct programState* initState(int inititalMemory[MEMORY]) {
+  struct programState* state = malloc(sizeof(struct programState));
+
+  state->instructionPointer = 0;
+  memcpy(state->memory, inititalMemory, sizeof(int) * MEMORY);
+
+  return state;
+}
+
+int runProgram(struct programState *state, struct queue* inputQueue, struct queue* outputQueue) {
   int halt = 0;
+  
   while (!halt) {
     int opCode, parameterModes[MAX_PARAMS] = {0}, params[MAX_PARAMS];
-    parseInstruction(&opCode, parameterModes, memory[instructionPointer]);
-    getParameters(memory, parameterModes, instructionPointer, params);
+    parseInstruction(&opCode, parameterModes, state->memory[state->instructionPointer]);
+    getParameters(state->memory, parameterModes, state->instructionPointer, params);
 
     debugLog(2, "Running instruction %d", opCode);
 
@@ -133,37 +144,37 @@ int runProgram(int sourceCode[MEMORY], struct queue* inputQueue, struct queue* o
     
     switch (opCode) {
       case 1: // ADD: Param 3 = param 1 + param 2
-        setValue(memory, params[2], getValue(memory, params[0]) + getValue(memory, params[1]));
-        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
+        setValue(state->memory, params[2], getValue(state->memory, params[0]) + getValue(state->memory, params[1]));
+        state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 3);
         break;
       case 2: // MUL: Param 3 = param 1 * param 2
-        setValue(memory, params[2], getValue(memory, params[0]) * getValue(memory, params[1]));
-        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
+        setValue(state->memory, params[2], getValue(state->memory, params[0]) * getValue(state->memory, params[1]));
+        state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 3);
         break;
       case 3: // INP: Param 1 = input
-        setValue(memory, params[0], queueGet(inputQueue));
-        instructionPointer = getNextInstructionPointer(instructionPointer, 1);
+        setValue(state->memory, params[0], queueGet(inputQueue));
+        state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 1);
         break;
       case 4: // OUT: Output param 1
-        debugLog(1, "Outputting %d", getValue(memory, params[0]));
-        queuePush(outputQueue, getValue(memory, params[0]));
-        instructionPointer = getNextInstructionPointer(instructionPointer, 1);
+        debugLog(1, "Outputting %d", getValue(state->memory, params[0]));
+        queuePush(outputQueue, getValue(state->memory, params[0]));
+        state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 1);
         break;
       case 5: // JMPT: jump to param 2 if param 1 != 0
-        condition = getValue(memory, params[0]);
-        instructionPointer = condition != 0 ? getValue(memory, params[1]) : getNextInstructionPointer(instructionPointer, 2);
+        condition = getValue(state->memory, params[0]);
+        state->instructionPointer = condition != 0 ? getValue(state->memory, params[1]) : getNextInstructionPointer(state->instructionPointer, 2);
         break;
       case 6: // JMPF: jump to param 2 if param 1 == 0
-        condition = getValue(memory, params[0]);
-        instructionPointer = condition == 0 ? getValue(memory, params[1]) : getNextInstructionPointer(instructionPointer, 2);
+        condition = getValue(state->memory, params[0]);
+        state->instructionPointer = condition == 0 ? getValue(state->memory, params[1]) : getNextInstructionPointer(state->instructionPointer, 2);
         break;
       case 7: // LESS param 3 = param 1 < param 2 ? 1 : 0
-        setValue(memory, params[2], getValue(memory, params[0]) < getValue(memory, params[1]));
-        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
+        setValue(state->memory, params[2], getValue(state->memory, params[0]) < getValue(state->memory, params[1]));
+        state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 3);
         break;
       case 8: // EQ param 3 = param 1 == param 2
-        setValue(memory, params[2], getValue(memory, params[0]) == getValue(memory, params[1]));
-        instructionPointer = getNextInstructionPointer(instructionPointer, 3);
+        setValue(state->memory, params[2], getValue(state->memory, params[0]) == getValue(state->memory, params[1]));
+        state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 3);
         break;
       case 99:
         halt = 1;
@@ -174,7 +185,7 @@ int runProgram(int sourceCode[MEMORY], struct queue* inputQueue, struct queue* o
     }
   }
 
-  return memory[0];
+  return -1;
 }
 
 int* readSourceCode(char *filename) {
@@ -242,21 +253,42 @@ int main(int argc, char *argv[]) {
 
   int part1 = 0;
   do {
-    struct queue *inputQueue = newQueue(0);
-    struct queue *outputQueue = newQueue(1, 0);
-    for (int s = 0; s < 5; s++) {
-      queuePush(inputQueue, sequence[s]);
-      queuePush(inputQueue, queueGet(outputQueue));
-      runProgram(program, inputQueue, outputQueue);
-    }
-    int finalThrust = queueGet(outputQueue);
-    if (finalThrust > part1) part1 = finalThrust;
+    struct queue* ioQueues[5] = {
+      newQueue(2, sequence[0], 0),
+      newQueue(1, sequence[1]),
+      newQueue(1, sequence[2]),
+      newQueue(1, sequence[3]),
+      newQueue(1, sequence[4]),
+    };
+    struct programState* states[5] = {
+      initState(program),
+      initState(program),
+      initState(program),
+      initState(program),
+      initState(program),
+    };
 
-    free(inputQueue);
-    free(outputQueue);
+    for (int s = 0; s < 5; s++) {
+      runProgram(states[s], ioQueues[s], ioQueues[(s + 1) % 5]);
+    }
+    int finalThrust = queueGet(ioQueues[0]);
+    if (finalThrust > part1) part1 = finalThrust;
+  
+    for (int i = 0; i < 5; i++) {
+      free(ioQueues[i]);
+      free(states[i]);
+    }
   } while (next_permutation(sequence, 5));
 
-  free(program);
-
   printf("Part 1: %d\n", part1);
+  exit(EXIT_SUCCESS);
+
+  int sequence2[] = {5, 6, 7, 8, 9};
+  int part2 = 0;
+  //do {
+  //} while (next_permutation(sequence2, 5));
+
+  printf("Part 2: %d\n", part2);
+
+  free(program);
 }
