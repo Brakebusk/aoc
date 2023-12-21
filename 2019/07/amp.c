@@ -49,12 +49,12 @@ int queueGet(struct queue* q) {
   return value;
 }
 
-struct queue* newQueue(int count, ...) {
+struct queue* newQueue(int nInitValues, ...) {
   struct queue *q = malloc(sizeof(struct queue));
 
   va_list args;
-  va_start(args, count);
-  for (int i = 0; i < count; i++) {
+  va_start(args, nInitValues);
+  for (int i = 0; i < nInitValues; i++) {
     queuePush(q, va_arg(args, int));
   }
   va_end(args);
@@ -200,6 +200,35 @@ int* readSourceCode(char *filename) {
   return memory;
 }
 
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int next_permutation(int* arr, int n) {
+    int i = n - 2;
+    while (i >= 0 && arr[i] >= arr[i + 1]) {
+        i--;
+    }
+    if (i < 0) {
+        return 0;
+    }
+    int j = n - 1;
+    while (arr[j] <= arr[i]) {
+        j--;
+    }
+    swap(&arr[i], &arr[j]);
+    int k = i + 1;
+    j = n - 1;
+    while (k < j) {
+        swap(&arr[k], &arr[j]);
+        k++;
+        j--;
+    }
+    return 1;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -209,14 +238,22 @@ int main(int argc, char *argv[]) {
   char *filename = argv[1];
   int *program = readSourceCode(filename);
 
-  int sequence[] = {4,3,2,1,0};
-  struct queue *ioQueue = newQueue(2, sequence[0], 0);
+  int sequence[] = {0, 1, 2, 3, 4};
 
-  for (int s = 0; s < 5; s++) {
-    if (s < 4) queuePush(ioQueue, sequence[s+1]);
-    runProgram(program, ioQueue);
-  }
+  int part1 = 0;
+  do {
+    struct queue *ioQueue = newQueue(2, sequence[0], 0);
+    
+    for (int s = 0; s < 5; s++) {
+      if (s < 4) queuePush(ioQueue, sequence[s+1]);
+      runProgram(program, ioQueue);
+      int inspectOutput = ioQueue->items[ioQueue->length-1];
+      if (inspectOutput > part1) part1 = inspectOutput;
+    }
+    free(ioQueue);
+  } while (next_permutation(sequence, 5));
 
   free(program);
-  free(ioQueue);
+
+  printf("Part 1: %d\n", part1);
 }
