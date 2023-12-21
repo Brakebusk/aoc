@@ -6,7 +6,7 @@
 #define MEMORY 1024
 #define MAX_PARAMS 3
 #define MAX_QUEUE_LENGTH 8
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 2
 
 void debugLog(int level, const char *format, ...) {
     if (DEBUG_LEVEL < level) return;
@@ -39,9 +39,7 @@ void queuePush(struct queue* q, int value) {
 
 int queueGet(struct queue* q) {
   if ((*q).length == 0) {
-    printf("[queueGet] Queue is empty!\n");
-    exit(EXIT_FAILURE);
-    return -1;
+    return -1; // TODO: THIS IS FINE??
   }
   int value = (*q).items[0];
   memcpy((*q).items, &(*q).items[1], sizeof(int) * (MAX_QUEUE_LENGTH - 1));
@@ -117,6 +115,7 @@ int getNextInstructionPointer(int currentIP, int paramCount) {
 }
 
 struct programState {
+  int halt;
   int instructionPointer;
   int memory[MEMORY];
 };
@@ -124,23 +123,22 @@ struct programState {
 struct programState* initState(int inititalMemory[MEMORY]) {
   struct programState* state = malloc(sizeof(struct programState));
 
+  state->halt = 0;
   state->instructionPointer = 0;
   memcpy(state->memory, inititalMemory, sizeof(int) * MEMORY);
 
   return state;
 }
 
-int runProgram(struct programState *state, struct queue* inputQueue, struct queue* outputQueue) {
-  int halt = 0;
-  
-  while (!halt) {
+int runProgram(struct programState *state, struct queue* inputQueue, struct queue* outputQueue) {  
+  while (!state->halt) {
     int opCode, parameterModes[MAX_PARAMS] = {0}, params[MAX_PARAMS];
     parseInstruction(&opCode, parameterModes, state->memory[state->instructionPointer]);
     getParameters(state->memory, parameterModes, state->instructionPointer, params);
 
     debugLog(2, "Running instruction %d", opCode);
 
-    int condition;
+    int condition, scratch;
     
     switch (opCode) {
       case 1: // ADD: Param 3 = param 1 + param 2
@@ -152,7 +150,9 @@ int runProgram(struct programState *state, struct queue* inputQueue, struct queu
         state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 3);
         break;
       case 3: // INP: Param 1 = input
-        setValue(state->memory, params[0], queueGet(inputQueue));
+        scratch = queueGet(inputQueue);
+        if (scratch == -1) return 0;
+        setValue(state->memory, params[0], scratch);
         state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 1);
         break;
       case 4: // OUT: Output param 1
@@ -177,7 +177,7 @@ int runProgram(struct programState *state, struct queue* inputQueue, struct queu
         state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 3);
         break;
       case 99:
-        halt = 1;
+        state->halt = 1;
         break;
       default:
         printf("Unknown opCode %d\n", opCode);
@@ -185,7 +185,7 @@ int runProgram(struct programState *state, struct queue* inputQueue, struct queu
     }
   }
 
-  return -1;
+  return 1;
 }
 
 int* readSourceCode(char *filename) {
@@ -240,6 +240,13 @@ int next_permutation(int* arr, int n) {
     return 1;
 }
 
+int allHalted(struct programState* states[5]) {
+  for (int i = 0; i < 5; i++) {
+    if (!states[i]->halt) return 0;
+  }
+  return 1;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -281,12 +288,38 @@ int main(int argc, char *argv[]) {
   } while (next_permutation(sequence, 5));
 
   printf("Part 1: %d\n", part1);
-  exit(EXIT_SUCCESS);
 
   int sequence2[] = {5, 6, 7, 8, 9};
   int part2 = 0;
-  //do {
-  //} while (next_permutation(sequence2, 5));
+  do {
+    struct queue* ioQueues[5] = {
+      newQueue(2, sequence[0], 0),
+      newQueue(1, sequence[1]),
+      newQueue(1, sequence[2]),
+      newQueue(1, sequence[3]),
+      newQueue(1, sequence[4]),
+    };
+    struct programState* states[5] = {
+      initState(program),
+      initState(program),
+      initState(program),
+      initState(program),
+      initState(program),
+    };
+
+    while (allHalted(states)) {
+      for (int s = 0; s < 5; s++) {
+        runProgram(states[s], ioQueues[s], ioQueues[(s + 1) % 5]);
+      }
+    }
+    int finalThrust = queueGet(ioQueues[4]);
+    if (finalThrust > part2) part2 = finalThrust;
+  
+    for (int i = 0; i < 5; i++) {
+      free(ioQueues[i]);
+      free(states[i]);
+    }
+  } while (next_permutation(sequence2, 5));
 
   printf("Part 2: %d\n", part2);
 
