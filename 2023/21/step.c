@@ -2,16 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DIMENSIONS 64
+
 struct tile {
   char symbol;
-  char marked;
+  char marked[DIMENSIONS];
 };
 
 void printGrid(struct tile grid[150][150], int gridSize) {
   for (int row = 0; row < gridSize; row++) {
     for (int col = 0; col < gridSize; col++) {
       struct tile t = grid[row][col];
-      printf("%c", t.marked ? 'O' : t.symbol);
+      printf("%c", t.marked[0] ? 'O' : t.symbol);
     }
     printf("\n");
   }
@@ -32,7 +34,7 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
   }
 
-  struct tile grid[150][150];
+  struct tile grid[150][150] = {0};
   int gridSize = 0;
 
   char line[150];
@@ -42,10 +44,8 @@ int main(int argc, char *argv[]) {
 
     for (int c = 0; c < gridSize; c++) {
       int isStart = line[c] == 'S';
-      grid[lineCounter][c] = (struct tile) {
-        .symbol = isStart ? '.' : line[c],
-        .marked = isStart
-      };
+      grid[lineCounter][c].symbol = isStart ? '.' : line[c];
+      grid[lineCounter][c].marked[0] = isStart;
     }
 
     lineCounter++;
@@ -59,24 +59,26 @@ int main(int argc, char *argv[]) {
     
     for (int row = 0; row < gridSize; row++) {
       for (int col = 0; col < gridSize; col++) {
-        newGrid[row][col].marked = 0;
+        for (int d = 0; d < DIMENSIONS; d++) {
+          newGrid[row][col].marked[d] = 0;
+        }
       }
     }
 
     for (int row = 0; row < gridSize; row++) {
       for (int col = 0; col < gridSize; col++) {
-        if (grid[row][col].marked) {
+        if (grid[row][col].marked[0]) {
           if (grid[row+1][col].symbol == '.') {
-            newGrid[row+1][col].marked = 1;
+            newGrid[row+1][col].marked[0] = 1;
           }
           if (grid[row-1][col].symbol == '.') {
-            newGrid[row-1][col].marked = 1;
+            newGrid[row-1][col].marked[0] = 1;
           }
           if (grid[row][col+1].symbol == '.') {
-            newGrid[row][col+1].marked = 1;
+            newGrid[row][col+1].marked[0] = 1;
           }
           if (grid[row][col-1].symbol == '.') {
-            newGrid[row][col-1].marked = 1;
+            newGrid[row][col-1].marked[0] = 1;
           }
         }
       }
@@ -88,7 +90,7 @@ int main(int argc, char *argv[]) {
   int part1 = 0;
   for (int row = 0; row < gridSize; row++) {
     for (int col = 0; col < gridSize; col++) {
-      if (grid[row][col].marked) part1++;
+      if (grid[row][col].marked[0]) part1++;
     }
   }
 
