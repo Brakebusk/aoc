@@ -42,7 +42,6 @@ int main(int argc, char *argv[]) {
   }
 
   int fewestZeroes = INT_MAX;
-  int fewestIndex = -1;
   int part1 = 0;
   for (int l = 0; l < layerCount; l++) {
     int zeroes = 0;
@@ -57,7 +56,6 @@ int main(int argc, char *argv[]) {
     }
     if (zeroes < fewestZeroes) {
       fewestZeroes = zeroes;
-      fewestIndex = l;
       part1 = ones * twos;
     }
   }
