@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #define MEMORY 1024
 #define MAX_PARAMS 3
 #define MAX_QUEUE_LENGTH 8
-#define DEBUG_LEVEL 2
+#define DEBUG_LEVEL 0
 
 void debugLog(int level, const char *format, ...) {
     if (DEBUG_LEVEL < level) return;
@@ -39,7 +40,7 @@ void queuePush(struct queue* q, int value) {
 
 int queueGet(struct queue* q) {
   if ((*q).length == 0) {
-    return -1; // TODO: THIS IS FINE??
+    return INT_MIN;
   }
   int value = (*q).items[0];
   memcpy((*q).items, &(*q).items[1], sizeof(int) * (MAX_QUEUE_LENGTH - 1));
@@ -115,14 +116,16 @@ int getNextInstructionPointer(int currentIP, int paramCount) {
 }
 
 struct programState {
+  int id;
   int halt;
   int instructionPointer;
   int memory[MEMORY];
 };
 
-struct programState* initState(int inititalMemory[MEMORY]) {
+struct programState* initState(int inititalMemory[MEMORY], int id) {
   struct programState* state = malloc(sizeof(struct programState));
 
+  state->id = id;
   state->halt = 0;
   state->instructionPointer = 0;
   memcpy(state->memory, inititalMemory, sizeof(int) * MEMORY);
@@ -151,7 +154,7 @@ int runProgram(struct programState *state, struct queue* inputQueue, struct queu
         break;
       case 3: // INP: Param 1 = input
         scratch = queueGet(inputQueue);
-        if (scratch == -1) return 0;
+        if (scratch == INT_MIN) return 0;
         setValue(state->memory, params[0], scratch);
         state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 1);
         break;
@@ -240,13 +243,6 @@ int next_permutation(int* arr, int n) {
     return 1;
 }
 
-int allHalted(struct programState* states[5]) {
-  for (int i = 0; i < 5; i++) {
-    if (!states[i]->halt) return 0;
-  }
-  return 1;
-}
-
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -268,11 +264,11 @@ int main(int argc, char *argv[]) {
       newQueue(1, sequence[4]),
     };
     struct programState* states[5] = {
-      initState(program),
-      initState(program),
-      initState(program),
-      initState(program),
-      initState(program),
+      initState(program, 0),
+      initState(program, 1),
+      initState(program, 2),
+      initState(program, 3),
+      initState(program, 4),
     };
 
     for (int s = 0; s < 5; s++) {
@@ -293,26 +289,26 @@ int main(int argc, char *argv[]) {
   int part2 = 0;
   do {
     struct queue* ioQueues[5] = {
-      newQueue(2, sequence[0], 0),
-      newQueue(1, sequence[1]),
-      newQueue(1, sequence[2]),
-      newQueue(1, sequence[3]),
-      newQueue(1, sequence[4]),
+      newQueue(2, sequence2[0], 0),
+      newQueue(1, sequence2[1]),
+      newQueue(1, sequence2[2]),
+      newQueue(1, sequence2[3]),
+      newQueue(1, sequence2[4]),
     };
     struct programState* states[5] = {
-      initState(program),
-      initState(program),
-      initState(program),
-      initState(program),
-      initState(program),
+      initState(program, 0),
+      initState(program, 1),
+      initState(program, 2),
+      initState(program, 3),
+      initState(program, 4),
     };
 
-    while (allHalted(states)) {
+    while (!states[4]->halt) {
       for (int s = 0; s < 5; s++) {
         runProgram(states[s], ioQueues[s], ioQueues[(s + 1) % 5]);
       }
     }
-    int finalThrust = queueGet(ioQueues[4]);
+    int finalThrust = queueGet(ioQueues[0]);
     if (finalThrust > part2) part2 = finalThrust;
   
     for (int i = 0; i < 5; i++) {
