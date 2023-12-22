@@ -60,5 +60,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  printf("Part 1: %d\n", part1);
+  printf("Part 1: %d\n\nPart2:\n", part1);
+
+  for (int row = 0; row < height; row++) {
+    for (int col = 0; col < width; col++) {
+      for (int l = 0; l < layerCount; l++) {
+        int v = layers[l].grid[row][col];
+        if (v < 2) {
+          printf("%c", v == 0 ? ' ' : '#');
+          break;
+        }
+      }
+    }
+    printf("\n");
+  }
 }
