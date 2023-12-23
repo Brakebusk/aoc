@@ -81,4 +81,10 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   printf("Part 1: %d\n", traverse(grid, gridSize, start[0], start[1], 0, end));
+  for (int row = 0; row < gridSize; row++) {
+    for (int col = 0; col < gridSize; col++) {
+      grid[row][col].symbol = grid[row][col].symbol == '#' ? '#' : '.';
+    }
+  }
+  printf("Part 2: %d\n", traverse(grid, gridSize, start[0], start[1], 0, end));
 }
