@@ -5,6 +5,11 @@
     "stdlib.h": "c",
     "__bit_reference": "c",
     "bitset": "c",
-    "unordered_map": "c"
+    "unordered_map": "c",
+    "array": "c",
+    "istream": "c",
+    "locale": "c",
+    "tuple": "c",
+    "variant": "c"
   }
 }
