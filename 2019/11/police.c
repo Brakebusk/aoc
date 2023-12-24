@@ -8,7 +8,7 @@
 #define MEMORY 2048
 #define MAX_PARAMS 3
 #define MAX_QUEUE_LENGTH 16
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 
 void debugLog(int level, const char *format, ...) {
     if (DEBUG_LEVEL < level) return;
@@ -255,55 +255,58 @@ int main(int argc, char *argv[]) {
   char *filename = argv[1];
   long long *program = readSourceCode(filename);
 
-  struct panel grid[100][100] = {0};
+  for (int part = 0; part < 2; part++) {
+    struct panel grid[100][100] = {0};
+    int row = 50, col = 50, dir = 0;
 
-  int row = 50, col = 50, dir = 0;
-
-  struct queue* ioQueues[2] = {
-    newQueue(1, 0),
+    struct queue* ioQueues[2] = {
+    newQueue(1, part),
     newQueue(0),
-  };
-  struct programState* state = initState(program, 0);
-  while (!state->halt) {
-    runProgram(state, ioQueues[0], ioQueues[1]);
-    char color = queueGet(ioQueues[1]);
-    char direction = queueGet(ioQueues[1]);
+    };
+    struct programState* state = initState(program, 0);
+    while (!state->halt) {
+      runProgram(state, ioQueues[0], ioQueues[1]);
+      char color = queueGet(ioQueues[1]);
+      char direction = queueGet(ioQueues[1]);
 
-    grid[row][col].color = color;
-    grid[row][col].marked = 1;
-    dir = mod(dir + (direction ? 1 : -1), 4);
+      grid[row][col].color = color;
+      grid[row][col].marked = 1;
+      dir = mod(dir + (direction ? 1 : -1), 4);
 
-    switch(dir) {
-      case 0:
-        row--;
-        break;
-      case 1:
-        col++;
-        break;
-      case 2:
-        row++;
-        break;
-      case 3:
-        col--;
-        break;
-      default:
-        printf("Unknown direction %d\n", dir);
-        exit(EXIT_FAILURE);
+      switch(dir) {
+        case 0:
+          row--;
+          break;
+        case 1:
+          col++;
+          break;
+        case 2:
+          row++;
+          break;
+        case 3:
+          col--;
+          break;
+        default:
+          printf("Unknown direction %d\n", dir);
+          exit(EXIT_FAILURE);
+      }
+
+      queuePush(ioQueues[0], grid[row][col].color);
     }
 
-    queuePush(ioQueues[0], grid[row][col].color);
-  }
+    if (part == 0) {
+      int part1 = 0;
+      for (int row = 0; row < 100; row++) {
+        for (int col = 0; col < 100; col++) {
+          if (grid[row][col].marked) part1++;
+        }
+      }
+      printf("Part 1: %d\n", part1);
+    } else printGrid(grid);
 
-  int part1 = 0;
-  for (int row = 0; row < 100; row++) {
-    for (int col = 0; col < 100; col++) {
-      if (grid[row][col].marked) part1++;
-    }
+    free(ioQueues[0]);
+    free(ioQueues[1]);
+    free(state);
   }
-  printf("Part 1: %d\n", part1);
-
-  free(ioQueues[0]);
-  free(ioQueues[1]);
-  free(state);
   free(program);
 }
