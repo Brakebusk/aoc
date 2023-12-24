@@ -48,6 +48,9 @@ long long queueGet(struct queue* q) {
   (*q).length--;
   return value;
 }
+void queueClear(struct queue* q) {
+  (*q).length = 0;
+}
 
 struct queue* newQueue(long long nInitValues, ...) {
   struct queue *q = malloc(sizeof(struct queue));
@@ -240,9 +243,20 @@ int main(int argc, char *argv[]) {
     newQueue(0),
   };
   struct programState* state = initState(program, 0);
+  printf("Part 1:\n");
+  runProgram(state, ioQueues[0], ioQueues[1]);
+  free(state);
+
+  queueClear(ioQueues[0]);
+  queueClear(ioQueues[1]);
+  queuePush(ioQueues[0], 2);
+
+  state = initState(program, 0);
+  printf("Part 2:\n");
   runProgram(state, ioQueues[0], ioQueues[1]);
 
   free(ioQueues[0]);
   free(ioQueues[1]);
+  free(state);
   free(program);
 }
