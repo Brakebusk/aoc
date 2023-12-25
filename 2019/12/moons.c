@@ -22,8 +22,8 @@ struct moon {
   int vx, vy, vz;
 };
 
-struct point {
-  int x, y, z;
+struct dimension {
+  int moon[4];
 };
 
 int main(int argc, char *argv[]) {
@@ -42,11 +42,11 @@ int main(int argc, char *argv[]) {
 
   struct moon moons[4];
 
-  struct point histories[4][10000];
-  memset(histories, 0, sizeof(struct point) * 4 * 10000);
+  struct dimension histories[3][10000];
+  memset(histories, 0, sizeof(struct dimension) * 3 * 10000);
   int hIndex = 0;
 
-  int repeatingIndex[4] = {0};
+  int repeatingIndex[3] = {0};
   int allRepeating = 0;
 
   char line[32];
@@ -62,17 +62,15 @@ int main(int argc, char *argv[]) {
       .vy = 0,
       .vz = 0
     };
-    histories[lc][0] = (struct point) {
-      .x = x,
-      .y = y,
-      .z = z
-    };
+    histories[0][0].moon[lc] = x;
+    histories[1][0].moon[lc] = y;
+    histories[2][0].moon[lc] = z;
     lc++;
   }
   fclose(fp);
   hIndex++;
 
-  for (int step = 0; step < 100000 || allRepeating < 4; step++) {
+  for (int step = 0; step < 10000 || allRepeating < 3; step++) {
     for (int m1 = 0; m1 < 3; m1++) {
       for (int m2 = m1 + 1; m2 < 4; m2++) {
         if (moons[m1].x > moons[m2].x) {
@@ -103,27 +101,26 @@ int main(int argc, char *argv[]) {
       moons[m].y += moons[m].vy;
       moons[m].z += moons[m].vz;
 
-      if (!repeatingIndex[m]) {
-        int repeating = 0;
-        for (int h = 0; h < hIndex; h++) {
-          if (histories[m][h].x == moons[m].x && histories[m][h].y == moons[m].y && histories[m][h].z == moons[m].z) {
-            repeating = 1;
+      histories[0][hIndex].moon[m] = moons[m].x;
+      histories[1][hIndex].moon[m] = moons[m].y;
+      histories[2][hIndex].moon[m] = moons[m].z;
+    }
+    
+    for (int d = 0; d < 3; d++) {
+      if (!repeatingIndex[d]) {
+        for (int h = 0; h < hIndex-1; h++) {
+          if (histories[d][h].moon[0] == histories[d][hIndex].moon[0] &&
+              histories[d][h].moon[1] == histories[d][hIndex].moon[1] &&
+              histories[d][h].moon[2] == histories[d][hIndex].moon[2] &&
+              histories[d][h].moon[3] == histories[d][hIndex].moon[3]) {
+            repeatingIndex[d] = h;
+            allRepeating++;
             break;
           }
         }
-
-        if (repeating) {
-          repeatingIndex[m] = step;
-          allRepeating++;
-        }
-
-        histories[m][hIndex] = (struct point) {
-          .x = moons[m].x,
-          .y = moons[m].y,
-          .z = moons[m].z
-        };
       }
     }
+
     hIndex++;
 
     if (step == 999) {
@@ -137,7 +134,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  printf("Got %d %d %d %d\n", repeatingIndex[0], repeatingIndex[1], repeatingIndex[2], repeatingIndex[3]);
+  printf("Got %d %d %d\n", repeatingIndex[0], repeatingIndex[1], repeatingIndex[2]);
 
-  printf("Part 2: %lld\n", lcm(repeatingIndex, 4));
+  printf("Part 2: %lld\n", lcm(repeatingIndex, 3));
 }
