@@ -7,10 +7,11 @@
 #define MAX_SOURCE_CODE_LENGTH 8192
 #define MEMORY 4096
 #define MAX_PARAMS 3
-#define MAX_QUEUE_LENGTH 16
-#define DEBUG_LEVEL 4
+#define MAX_QUEUE_LENGTH 3
 #define SCREEN_RESOLUTION_X 40
 #define SCREEN_RESOLUTION_Y 21
+
+#define DEBUG_LEVEL 0
 
 void debugLog(int level, const char *format, ...) {
     if (DEBUG_LEVEL < level) return;
@@ -165,13 +166,13 @@ int runProgram(struct programState *state, struct queue* inputQueue, struct queu
         break;
       case 3: // INP: Param 1 = input
         scratch = queueGet(inputQueue);
-        if (scratch == LLONG_MIN) return 0;
+        if (scratch == LLONG_MIN) return 3;
         setValue(state->memory, params[0], scratch);
         state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 1);
         break;
       case 4: // OUT: Output param 1
         debugLog(1, "Outputting %lld", getValue(state->memory, params[0]));
-        if (!queuePush(outputQueue, getValue(state->memory, params[0]))) return 0;
+        if (!queuePush(outputQueue, getValue(state->memory, params[0]))) return 4;
         state->instructionPointer = getNextInstructionPointer(state->instructionPointer, 1);
         break;
       case 5: // JMPT: jump to param 2 if param 1 != 0
@@ -204,7 +205,7 @@ int runProgram(struct programState *state, struct queue* inputQueue, struct queu
     }
   }
 
-  return 1;
+  return 0;
 }
 
 long long* readSourceCode(char *filename) {
@@ -263,6 +264,24 @@ void printScreen(struct tile screen[SCREEN_RESOLUTION_Y][SCREEN_RESOLUTION_X]) {
   }
 }
 
+int findBall(struct tile screen[SCREEN_RESOLUTION_Y][SCREEN_RESOLUTION_X]) {
+  for (int r = 0; r < SCREEN_RESOLUTION_Y; r++) {
+    for (int c = 0; c < SCREEN_RESOLUTION_X; c++) {
+      if (screen[r][c].id == 4) return c;
+    }
+  }
+  return -1;
+}
+
+int findPaddle(struct tile screen[SCREEN_RESOLUTION_Y][SCREEN_RESOLUTION_X]) {
+  for (int r = 0; r < SCREEN_RESOLUTION_Y; r++) {
+    for (int c = 0; c < SCREEN_RESOLUTION_X; c++) {
+      if (screen[r][c].id == 3) return c;
+    }
+  }
+  return -1;
+}
+
 int mod(int a, int b) {
   return (a % b + b) % b;
 }
@@ -282,38 +301,70 @@ int main(int argc, char *argv[]) {
     newQueue(0),
     newQueue(0),
   };
-  struct programState* state = initState(program, 0);
-  while (!state->halt || ioQueues[1]->length >= 3) {
-    runProgram(state, ioQueues[0], ioQueues[1]);
-    if (ioQueues[1]->length >= 3) {
-      int x = queueGet(ioQueues[1]);
-      int y = queueGet(ioQueues[1]);
-      char id = queueGet(ioQueues[1]);
 
-      if (y > SCREEN_RESOLUTION_Y - 1) {
-        printf("Attempting to write outside screen Y bounds: %d\n", y);
-        exit(EXIT_FAILURE);
-      } else if (x > SCREEN_RESOLUTION_X - 1) {
-        printf("Attempting to write outside screen X bounds: %d\n", x);
-        exit(EXIT_FAILURE);
+  for (int part = 0; part < 2; part++) {
+    long long score = 0;
+    queueClear(ioQueues[0]);
+    queueClear(ioQueues[1]);
+
+    int inputCounter = 0;
+
+    struct programState* state = initState(program, 0);
+    if (part) {
+      setValue(state->memory, 0, 2);
+      for (int addr = 1360; addr < 1394; addr++) {
+        setValue(state->memory, addr, 1);
+      }
+    }
+
+    while (!state->halt) {      
+      int breakPoint = runProgram(state, ioQueues[0], ioQueues[1]);
+
+      int bp = findBall(screen);
+      int pp = findPaddle(screen);
+      if (bp > -1 && pp > -1) {
+        //printScreen(screen);
       }
 
-      screen[y][x].id = id;
-    }
-  }
+      if (breakPoint == 4 || (state->halt && ioQueues[1]->length >= 3)) {
+        int x = queueGet(ioQueues[1]);
+        int y = queueGet(ioQueues[1]);
+        long long id = queueGet(ioQueues[1]);
 
-  printScreen(screen);
-  int part1 = 0;
-  for (int r = 0; r < SCREEN_RESOLUTION_Y; r++) {
-    for (int c = 0; c < SCREEN_RESOLUTION_X; c++) {
-      if (screen[r][c].id == 2) part1++;
+        if (y > SCREEN_RESOLUTION_Y - 1) {
+          printf("Attempting to write outside screen Y bounds: %d\n", y);
+          exit(EXIT_FAILURE);
+        } else if (x > SCREEN_RESOLUTION_X - 1) {
+          printf("Attempting to write outside screen X bounds: %d\n", x);
+          exit(EXIT_FAILURE);
+        }
+
+        if (x == -1 && y == 0) {
+          score = id;
+        } else {
+          screen[y][x].id = id;
+        }
+      } else if (breakPoint == 3) {
+        queuePush(ioQueues[0], (inputCounter++ % 3) - 1);
+      }
     }
+
+    if (part == 0) {
+      int part1 = 0;
+      for (int r = 0; r < SCREEN_RESOLUTION_Y; r++) {
+        for (int c = 0; c < SCREEN_RESOLUTION_X; c++) {
+          if (screen[r][c].id == 2) part1++;
+        }
+      }
+      printf("Part 1: %d\n", part1);
+    } else {
+      printScreen(screen);
+      printf("Part 2: %lld\n", score);
+    }
+    free(state);
   }
-  printf("Part 1: %d\n", part1);
 
   free(ioQueues[0]);
   free(ioQueues[1]);
-  free(state);
   free(program);
-
 }
