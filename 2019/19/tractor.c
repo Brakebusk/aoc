@@ -11,7 +11,7 @@
 
 #define DEBUG_LEVEL 0
 
-#define GRID_SIZE 50
+#define GRID_SIZE 1200
 
 void debugLog(int level, const char *format, ...) {
     if (DEBUG_LEVEL < level) return;
@@ -232,12 +232,35 @@ long long* readSourceCode(char *filename) {
 }
 
 void printGrid(char grid[GRID_SIZE][GRID_SIZE]) {
-  for (int row = 0; row < GRID_SIZE; row++) {
-    for (int col = 0; col < GRID_SIZE; col++) {
+  for (int row = 0; row < 50; row++) {
+    for (int col = 0; col < 50; col++) {
       printf("%c", grid[row][col] ? '#' : '.');
     }
     printf("\n");
   }
+}
+
+int getSquare(char grid[GRID_SIZE][GRID_SIZE]) {
+  for (int row = 0; row < GRID_SIZE - 101; row++) {
+    for (int col = 0; col < GRID_SIZE - 101; col++) {
+      if (grid[row][col]) {
+        int valid = 1;
+        for (int r = row; r < row+100 && valid; r++) {
+          for (int c = col; c < col+100; c++) {
+            if (!grid[r][c]) {
+              valid = 0;
+              break;
+            }
+          }
+        }
+        if (valid) {
+          printf("Found at row %d col %d\n", row, col);
+          return col * 10000 + row;
+        }
+      }
+    }
+  }
+  return -1;
 }
 
 int main(int argc, char *argv[]) {
@@ -273,13 +296,14 @@ int main(int argc, char *argv[]) {
   printGrid(grid);
 
   int part1 = 0;
-  for (int row = 0; row < GRID_SIZE; row++) {
-    for (int col = 0; col < GRID_SIZE; col++) {
+  for (int row = 0; row < 50; row++) {
+    for (int col = 0; col < 50; col++) {
       part1 += grid[row][col];
     }
   }
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", getSquare(grid));
 
   free(program);
 }
