@@ -231,9 +231,9 @@ long long* readSourceCode(char *filename) {
   return memory;
 }
 
-void printGrid(char grid[GRID_SIZE][GRID_SIZE], int width, int height) {
-  for (int row = 0; row < height; row++) {
-    for (int col = 0; col < width; col++) {
+void printGrid(char grid[GRID_SIZE][GRID_SIZE]) {
+  for (int row = 0; row < GRID_SIZE; row++) {
+    for (int col = 0; col < GRID_SIZE; col++) {
       char c = grid[row][col];
       printf("%c", c != 0 ? c : ' ');
     }
@@ -290,6 +290,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  printGrid(grid);
   printf("Part1: %d\n", part1);
 
   free(state);
