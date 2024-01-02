@@ -279,10 +279,22 @@ int main(int argc, char *argv[]) {
     outputQueues[i] = newQueue(0);
   }
   
+  long long part1 = 0, part2 = 0;
+
+  long long natX;
+  long long natY;
+
+  long long prevY;
+  
   int halt = 0;
   while (!halt) {
+    int idle = 1;
     for (int i = 0; i < 50; i++) {
-      if (inputQueues[i]->length == 0) queuePush(inputQueues[i], -1);
+      if (inputQueues[i]->length == 0) {
+        queuePush(inputQueues[i], -1);
+      } else {
+        idle = 0;
+      }
       int breakPoint = runProgram(states[i], inputQueues[i], outputQueues[i]);
 
       if (outputQueues[i]->length >= 3) {
@@ -293,15 +305,30 @@ int main(int argc, char *argv[]) {
           queuePush(inputQueues[destination], X);
           queuePush(inputQueues[destination], Y);
         } else if (destination == 255) {
-          printf("Part 1: %lld\n", Y);
-          halt = 1;
+          if (!part1) part1 = Y;
+          natX = X;
+          natY = Y;
         } else {
           printf("Invalid destination '%d'\n", destination);
           exit(EXIT_FAILURE);
         }
       }
     }
+    if (idle) {
+      queuePush(inputQueues[0], natX);
+      queuePush(inputQueues[0], natY);
+
+      if (natY == prevY) {
+        halt = 1;
+        part2 = natY;
+      }
+
+      prevY = natY;
+    }
   }
+
+  printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
 
   // Cleanup
   free(program);
