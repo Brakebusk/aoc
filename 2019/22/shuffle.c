@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CARD_COUNT 10
+#define CARD_COUNT 10007
 
 int mod(int a, int b) {
   return (a % b + b) % b;
@@ -57,11 +57,38 @@ int main(int argc, char *argv[]) {
   }
   
 
-  char line[512];
-  while(fgets(line, 512, fp)) {
-
+  char line[32];
+  while(fgets(line, 32, fp)) {
+    char *token = strtok(line, " ");
+    if (strcmp(token, "deal") == 0) {
+      token = strtok(NULL, " ");
+      if (strcmp(token, "into") == 0) {
+        deal(deck, deck2);
+      } else if (strcmp(token, "with") == 0) {
+        token = strtok(NULL, " ");
+        token = strtok(NULL, "\n");
+        dealIncrement(deck, deck2, atoi(token));
+      } else {
+        printf("Unknown token #2 '%s'\n", token);
+        exit(EXIT_FAILURE);
+      }
+    } else if (strcmp(token, "cut") == 0) {
+      token = strtok(NULL, "\n");
+      cut(deck, deck2, atoi(token));
+    } else {
+      printf("Unknown token '%s'\n", token);
+      exit(EXIT_FAILURE);
+    }
+    memcpy(deck, deck2, sizeof(int) * CARD_COUNT);
   }
   fclose(fp);
+
+  for (int i = 0; i < CARD_COUNT; i++) {
+    if (deck[i] == 2019) {
+      printf("Part 1: %d\n", i);
+      break;
+    }
+  }
 
   free(deck);
   free(deck2);
