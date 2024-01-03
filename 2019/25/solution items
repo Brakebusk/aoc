@@ -1,0 +1,14 @@
+semiconductor = light
+loom = light
+mutex = light
+sand = light
+asterisk = light
+wreath = light
+dark matter = light
+ornament = heavy
+
+must be included:
+loom
+wreath
+mutex
+sand
