@@ -35,9 +35,19 @@ int main(int argc, char *argv[]) {
   qsort(list2, length, sizeof(int), compare);
 
   int part1 = 0;
+  int part2 = 0;
   for (int i = 0; i < length; i++) {
     part1 += abs(list1[i] - list2[i]);
+
+    int occurances = 0;
+    for (int k = 0; k < length; k++) {
+      if (list1[i] == list2[k]) {
+        occurances ++;
+      } else if (list1[i] < list2[k]) break;
+    }
+    part2 += list1[i] * occurances;
   }
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
