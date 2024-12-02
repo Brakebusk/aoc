@@ -26,22 +26,58 @@ int main(int argc, char *argv[]) {
     strncpy(slope[height++], line, width);
   }
   fclose(fp);
-
-  /*
-  for (int r = 0; r < height; r++) {
-    for (int c = 0; c < width; c++) {
-      printf("%c", slope[r][c]);
-    }
-    printf("\n");
-  }
-  printf("\n");*/
   
   int part1 = 0;
+  long long part2 = 0;
   int c = 0;
   for (int r = 1; r < height; r++) {
     c += 3;
-    if (slope[r][c % width] == '#') part1++;
+    if (slope[r][c % width] == '#') {
+      part1++;
+      part2++;
+    }
   }
 
+  c = 0;
+  int mult = 0;
+  for (int r = 1; r < height; r++) {
+    c += 1;
+    if (slope[r][c % width] == '#') {
+      mult++;
+    }
+  }
+  part2 *= mult;
+
+  c = 0;
+  mult = 0;
+  for (int r = 1; r < height; r++) {
+    c += 5;
+    if (slope[r][c % width] == '#') {
+      mult++;
+    }
+  }
+  part2 *= mult;
+
+  c = 0;
+  mult = 0;
+  for (int r = 1; r < height; r++) {
+    c += 7;
+    if (slope[r][c % width] == '#') {
+      mult++;
+    }
+  }
+  part2 *= mult;
+
+  c = 0;
+  mult = 0;
+  for (int r = 2; r < height; r+=2) {
+    c += 1;
+    if (slope[r][c % width] == '#') {
+      mult++;
+    }
+  }
+  part2 *= mult;
+
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %lld\n", part2);
 }
