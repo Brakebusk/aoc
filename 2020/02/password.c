@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[48];
   while(fgets(line, 48, fp)) {
@@ -30,8 +31,14 @@ int main(int argc, char *argv[]) {
       if (password[i] == letter) occurrences++;
     }
     if (occurrences >= min && occurrences <= max) part1++;
+
+    int fits = 0;
+    if (password[min-1] == letter) fits++;
+    if (password[max-1] == letter) fits++;
+    if (fits == 1) part2++;
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
