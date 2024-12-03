@@ -22,9 +22,7 @@ struct moon {
   int vx, vy, vz;
 };
 
-struct dimension {
-  int moon[4];
-};
+const int HISTORY_LENGTH = 1000000;
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -42,12 +40,17 @@ int main(int argc, char *argv[]) {
 
   struct moon moons[4];
 
-  struct dimension histories[3][10000];
-  memset(histories, 0, sizeof(struct dimension) * 3 * 10000);
-  int hIndex = 0;
+  struct moon* history1 = malloc(sizeof(struct moon) * HISTORY_LENGTH);
+  memset(history1, 0, sizeof(struct moon) * HISTORY_LENGTH);
+  struct moon* history2 = malloc(sizeof(struct moon) * HISTORY_LENGTH);
+  memset(history2, 0, sizeof(struct moon) * HISTORY_LENGTH);
+  struct moon* history3 = malloc(sizeof(struct moon) * HISTORY_LENGTH);
+  memset(history3, 0, sizeof(struct moon) * HISTORY_LENGTH);
+  struct moon* history4 = malloc(sizeof(struct moon) * HISTORY_LENGTH);
+  memset(history4, 0, sizeof(struct moon) * HISTORY_LENGTH);
 
-  int repeatingIndex[3] = {0};
-  int allRepeating = 0;
+  struct moon* histories[4] = {history1, history2, history3, history4};
+  int hIndex = 0;
 
   char line[32];
   int lc = 0;
@@ -62,15 +65,13 @@ int main(int argc, char *argv[]) {
       .vy = 0,
       .vz = 0
     };
-    histories[0][0].moon[lc] = x;
-    histories[1][0].moon[lc] = y;
-    histories[2][0].moon[lc] = z;
+    memcpy(histories[lc], &moons[lc], sizeof(struct moon));
     lc++;
   }
   fclose(fp);
   hIndex++;
 
-  for (int step = 0; step < 10000 || allRepeating < 3; step++) {
+  for (int step = 0; step < HISTORY_LENGTH-1; step++) {
     for (int m1 = 0; m1 < 3; m1++) {
       for (int m2 = m1 + 1; m2 < 4; m2++) {
         if (moons[m1].x > moons[m2].x) {
@@ -101,24 +102,7 @@ int main(int argc, char *argv[]) {
       moons[m].y += moons[m].vy;
       moons[m].z += moons[m].vz;
 
-      histories[0][hIndex].moon[m] = moons[m].x;
-      histories[1][hIndex].moon[m] = moons[m].y;
-      histories[2][hIndex].moon[m] = moons[m].z;
-    }
-    
-    for (int d = 0; d < 3; d++) {
-      if (!repeatingIndex[d]) {
-        for (int h = 0; h < hIndex-1; h++) {
-          if (histories[d][h].moon[0] == histories[d][hIndex].moon[0] &&
-              histories[d][h].moon[1] == histories[d][hIndex].moon[1] &&
-              histories[d][h].moon[2] == histories[d][hIndex].moon[2] &&
-              histories[d][h].moon[3] == histories[d][hIndex].moon[3]) {
-            repeatingIndex[d] = h;
-            allRepeating++;
-            break;
-          }
-        }
-      }
+      memcpy(&histories[m][hIndex], &moons[m], sizeof(struct moon));
     }
 
     hIndex++;
@@ -133,8 +117,40 @@ int main(int argc, char *argv[]) {
       printf("Part 1: %d\n", part1);
     }
   }
+  
+  int xRep, yRep, zRep;
+  for (int h = 1; h < HISTORY_LENGTH; h++) {
+    if (histories[0][h].x == histories[0][0].x && histories[0][h].vx == 0 &&
+        histories[1][h].x == histories[1][0].x && histories[1][h].vx == 0 &&
+        histories[2][h].x == histories[2][0].x && histories[2][h].vx == 0 &&
+        histories[3][h].x == histories[3][0].x && histories[3][h].vx == 0) {
+      xRep = h;
+      break;
+    }
+  }
+  for (int h = 1; h < HISTORY_LENGTH; h++) {
+    if (histories[0][h].y == histories[0][0].y && histories[0][h].vy == 0 &&
+        histories[1][h].y == histories[1][0].y && histories[1][h].vy == 0 &&
+        histories[2][h].y == histories[2][0].y && histories[2][h].vy == 0 &&
+        histories[3][h].y == histories[3][0].y && histories[3][h].vy == 0) {
+      yRep = h;
+      break;
+    }
+  }
+  for (int h = 1; h < HISTORY_LENGTH; h++) {
+    if (histories[0][h].z == histories[0][0].z && histories[0][h].vz == 0 &&
+        histories[1][h].z == histories[1][0].z && histories[1][h].vz == 0 &&
+        histories[2][h].z == histories[2][0].z && histories[2][h].vz == 0 &&
+        histories[3][h].z == histories[3][0].z && histories[3][h].vz == 0) {
+      zRep = h;
+      break;
+    }
+  }
 
-  printf("Got %d %d %d\n", repeatingIndex[0], repeatingIndex[1], repeatingIndex[2]);
+  printf("Part 2: %lld\n", lcm((int[]){xRep, yRep, zRep}, 3));
 
-  printf("Part 2: %lld\n", lcm(repeatingIndex, 3));
+  free(history1);
+  free(history2);
+  free(history3);
+  free(history4);
 }
