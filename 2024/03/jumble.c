@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char mulPattern[] = "mul(";
+const char doPattern[] = "do()";
+const char dontPattern[] = "don't()";
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -17,19 +21,20 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
   
-  char pattern[] = "mul(";
+  int enabled = 1;
+  
   char line[4096];
   while(fgets(line, 4096, fp)) {
-    int c = 0;
     int length = strlen(line);
-    while (c < length) {
-      if (strncmp(&line[c], pattern, 4) == 0) {
+    
+    for (int c = 0; c < length; c++) {
+      if (strncmp(&line[c], mulPattern, 4) == 0) {
         int a = -1, b = -1;
         char end;
         sscanf(&line[c], "mul(%d,%d%c", &a, &b, &end);
         if (a <= 0 || b <= 0 || a > 999 || b > 999 || end != ')') {
-          c++;
           continue;
         }
         int valid = 1;
@@ -41,13 +46,19 @@ int main(int argc, char *argv[]) {
           } else if (line[i] == ')') break;
         }
         if (valid) {
-          part1 += a * b;
+          int product = a * b;
+          part1 += product;
+          if (enabled) part2 += product;
         }
+      } else if (strncmp(&line[c], doPattern, 4) == 0) {
+        enabled = 1;
+      } else if (strncmp(&line[c], dontPattern, 7) == 0) {
+        enabled = 0;
       }
-      c++;
     }
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
