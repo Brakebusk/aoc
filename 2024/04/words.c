@@ -82,10 +82,23 @@ int main(int argc, char *argv[]) {
   for (int c = 1; c < size - 3; c++) {
     for (int d = 0; c+d < size - 3; d++) {
       char buffer[4];
-      for (int i = 0; i < 4; i++) buffer[i] = matrix[size-1- d-i][c+d+i];
+      for (int i = 0; i < 4; i++) buffer[i] = matrix[size-1-d-i][c+d+i];
       if (check(buffer)) part1++;
     }
   }
 
   printf("Part 1: %d\n", part1);
+
+  int part2 = 0;
+  for (int r = 1; r < size - 1; r++) {
+    for (int c = 1; c < size - 1; c++) {
+      if (matrix[r][c] == 'A') {
+        if (((matrix[r-1][c-1] == 'M' && matrix[r+1][c+1] == 'S') || 
+             (matrix[r-1][c-1] == 'S' && matrix[r+1][c+1] == 'M')) &&
+            ((matrix[r+1][c-1] == 'M' && matrix[r-1][c+1] == 'S') || 
+             (matrix[r+1][c-1] == 'S' && matrix[r-1][c+1] == 'M'))) part2++;
+      }
+    }
+  }
+  printf("Part 2: %d\n", part2);
 }
