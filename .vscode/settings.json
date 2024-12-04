@@ -10,6 +10,8 @@
     "istream": "c",
     "locale": "c",
     "tuple": "c",
-    "variant": "c"
+    "variant": "c",
+    "queue": "c",
+    "stack": "c"
   }
 }
