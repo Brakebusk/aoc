@@ -5,18 +5,18 @@
 
 struct ingredient {
   char name[8];
-  int quantity;
+  long long quantity;
 };
 
 struct product {
   char name[8];
-  int quantity;
-  int ingredientCount;
+  long long quantity;
+  long long ingredientCount;
   struct ingredient ingredients[16];
-  int stock;
+  long long stock;
 };
 
-int findIndex(struct product products[64], char *name) {
+long long findIndex(struct product products[64], char *name) {
   int i = 0;
   do {
     if (strcmp(products[i].name, name) == 0) return i;
@@ -24,8 +24,59 @@ int findIndex(struct product products[64], char *name) {
   return -1;
 }
 
-int ceilDiv(int a, int b) {
+long long ceilDiv(long long a, long long b) {
   return (a + b - 1) / b;
+}
+
+long long run(struct product products[], int productCount, long long fuelCount) {
+  long long oreNeeded = 0;
+  struct ingredient needs[128];
+  int needCount = 1;
+  strcpy(needs[0].name, "FUEL");
+  needs[0].quantity = fuelCount;
+
+  for (int p = 0; p < productCount; p++) products[p].stock = 0;
+  
+  while (needCount) {
+    struct ingredient newNeeds[128];
+    int newNeedCount = 0;
+    for (int i = 0; i < needCount; i++) {
+      struct ingredient ing = needs[i];
+      struct product *p = &products[findIndex(products, ing.name)];;
+      
+      if (p->stock >= ing.quantity) {
+        p->stock -= ing.quantity;
+      } else {
+        long long remaining = ing.quantity - p->stock;
+        p->stock = 0;
+
+        long long reactions = ceilDiv(remaining, p->quantity);
+        p->stock = (reactions * p->quantity) - remaining;
+        for (int pi = 0; pi < p->ingredientCount; pi++) {
+          if (strcmp(p->ingredients[pi].name, "ORE") == 0) {
+            oreNeeded += reactions * p->ingredients[pi].quantity;
+          } else {
+            int present = 0;
+            for (int nn = 0; nn < newNeedCount; nn++) {
+              if (strcmp(newNeeds[nn].name, p->ingredients[pi].name) == 0) {
+                present = 1;
+                newNeeds[nn].quantity += reactions * p->ingredients[pi].quantity;
+              }
+            }
+            if (present == 0) {
+              newNeeds[newNeedCount].quantity = reactions * p->ingredients[pi].quantity;
+              strcpy(newNeeds[newNeedCount].name, p->ingredients[pi].name);
+              newNeedCount++;
+            }
+          }
+        }
+      }
+    }
+    memcpy(needs, newNeeds, sizeof(struct ingredient) * 128);
+    needCount = newNeedCount;
+  }
+
+  return oreNeeded;
 }
 
 int main(int argc, char *argv[]) {
@@ -59,19 +110,19 @@ int main(int argc, char *argv[]) {
     char *ingredient;
     char *rest = token;
     while((ingredient = strtok_r(rest , ",", &rest))) {
-      int quantity;
+      long long quantity;
       char name[8] = {0};
-      sscanf(ingredient, "%d %s", &quantity, name);
+      sscanf(ingredient, "%lld %s", &quantity, name);
       
-      int count = products[productCount].ingredientCount++;
+      long long count = products[productCount].ingredientCount++;
       products[productCount].ingredients[count].quantity = quantity;
       memcpy(products[productCount].ingredients[count].name, name, sizeof(char) * 8);
     }
 
     token = strtok(NULL, ">");
-    int quantity;
+    long long quantity;
     char name[8] = {0};
-    sscanf(token, "%d %s", &quantity, name);
+    sscanf(token, "%lld %s", &quantity, name);
     products[productCount].quantity = quantity;
     memcpy(products[productCount].name, name, sizeof(char) * 8);
     if (strcmp(name, "FUEL") == 0) {
@@ -82,51 +133,22 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
   
-  int part1 = 0;
+  long long part1 = run(products, productCount, 1);
+  printf("Part 1: %lld\n", part1);
 
-  struct ingredient needs[128];
-  int needCount = 1;
-  strcpy(needs[0].name, "FUEL");
-  needs[0].quantity = 1;
-  
-  while (needCount) {
-    struct ingredient newNeeds[128];
-    int newNeedCount = 0;
-    for (int i = 0; i < needCount; i++) {
-      struct ingredient ing = needs[i];
-      struct product *p = &products[findIndex(products, ing.name)];;
-      
-      if (p->stock >= ing.quantity) {
-        p->stock -= ing.quantity;
-      } else {
-        int remaining = ing.quantity - p->stock;
-        p->stock = 0;
+  long long estimate = 1000000000000 / part1;
 
-        int reactions = ceilDiv(remaining, p->quantity);
-        p->stock = (reactions * p->quantity) - remaining;
-        for (int pi = 0; pi < p->ingredientCount; pi++) {
-          if (strcmp(p->ingredients[pi].name, "ORE") == 0) {
-            part1 += reactions * p->ingredients[pi].quantity;
-          } else {
-            int present = 0;
-            for (int nn = 0; nn < newNeedCount; nn++) {
-              if (strcmp(newNeeds[nn].name, p->ingredients[pi].name) == 0) {
-                present = 1;
-                newNeeds[nn].quantity += reactions * p->ingredients[pi].quantity;
-              }
-            }
-            if (present == 0) {
-              newNeeds[newNeedCount].quantity = reactions * p->ingredients[pi].quantity;
-              strcpy(newNeeds[newNeedCount].name, p->ingredients[pi].name);
-              newNeedCount++;
-            }
-          }
-        }
-      }
-    }
-    memcpy(needs, newNeeds, sizeof(struct ingredient) * 128);
-    needCount = newNeedCount;
+  long long oreNeeded = 0;
+  while (oreNeeded < 1000000000000) {
+    oreNeeded = run(products, productCount, estimate);
+    long long offset = llabs(oreNeeded - 1000000000000) / (oreNeeded / estimate);
+    if (offset < 1) offset = 1;
+    estimate += offset;
+  }
+  while (oreNeeded > 1000000000000) {
+    estimate--;
+    oreNeeded = run(products, productCount, estimate);
   }
 
-  printf("Part 1: %d\n", part1);
+  printf("Part 2: %lld\n", estimate);  
 }
