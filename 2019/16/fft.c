@@ -53,4 +53,37 @@ int main(int argc, char *argv[]) {
   }
   printf("Part 1: ");
   printDigits(digits, 8);
+
+  char offsetBuffer[8] = {0};
+  strncpy(offsetBuffer, line, 7);
+  int offset = atoi(offsetBuffer);
+
+  int endOffset = (10000 * digitCount) - offset;
+
+  char reverse[800];
+  for (int i = 0; i < digitCount; i++) reverse[i] = line[digitCount-1-i];
+
+  int *lastDigits = malloc(endOffset * sizeof(int));
+  for (int i = endOffset - 1; i >= 0; i--) {
+    lastDigits[i] = reverse[(endOffset - 1 - i) % digitCount]-'0';
+  }
+  int *lastOutput = malloc(endOffset * sizeof(int));
+
+  for (int i = 0; i < 100; i++) {
+    for (int d = endOffset - 1; d >= 0; d--) {
+      if (d == endOffset - 1) {
+        lastOutput[endOffset-1] = lastDigits[endOffset-1];
+      } else {
+        lastOutput[d] = (lastDigits[d] + lastOutput[d+1]) % 10;
+      }
+    }
+
+    for (int d = 0; d < endOffset; d++) {
+      lastDigits[d] = lastOutput[d];
+    }
+
+  }
+
+  printf("Part 2: ");
+  printDigits(lastDigits, 8);
 }
