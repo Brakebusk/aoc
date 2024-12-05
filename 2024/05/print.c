@@ -2,6 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+int rules[1200][2];
+int ruleCount = 0;
+
+int compare(const void* a, const void* b) {
+  int val1 = *(int*)a;
+  int val2 = *(int*)b;
+  
+  for (int i = 0; i < ruleCount; i++) {
+    if (val1 == rules[i][0] && val2 == rules[i][1]) {
+      return -1;
+    } else if (val1 == rules[i][1] && val2 == rules[i][0]) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -16,8 +33,6 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
   }
 
-  int rules[1200][2];
-  int ruleCount = 0;
 
   int updates[256][32];
   memset(updates, 0, sizeof(int) * 256 * 32);
@@ -49,11 +64,12 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   int part1 = 0;
+  int part2 = 0;
   
   for (int u = 0; u < updateCount; u++) {
     int valid = 1;
     int p = -1;
-    while (updates[u][++p] > 0 && valid) {
+    while (updates[u][++p] > 0) {
       int page = updates[u][p];
       for (int i = p - 1; i >= 0; i--) {
         int testPage = updates[u][i];
@@ -61,13 +77,18 @@ int main(int argc, char *argv[]) {
         for (int r = 0; r < ruleCount; r++) {
           if (page == rules[r][0] && testPage == rules[r][1]) {
             valid = 0;
-            break;
           }
         }
       }
     }
-    if (valid) part1 += updates[u][p / 2];
+    if (valid) {
+      part1 += updates[u][p / 2];
+    } else {
+      qsort(updates[u], p, sizeof(int), compare);
+      part2 += updates[u][p / 2];
+    }
   }
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
