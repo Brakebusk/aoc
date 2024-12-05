@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
   }
 
-
   int updates[256][32];
   memset(updates, 0, sizeof(int) * 256 * 32);
   int updateCount = 0;
