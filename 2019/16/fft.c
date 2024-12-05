@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < 100; i++) {
     for (int d = 0; d < digitCount; d++) {
       int v = 0;
-      for (int j = 0; j < digitCount; j++) {
+      for (int j = d; j < digitCount; j++) {
         v += getPatternValue(d, j) * digits[j];
       }
       output[d] = abs(v) % 10;
