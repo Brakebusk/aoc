@@ -5,11 +5,12 @@
 #include <limits.h>
 
 #define MAX_SOURCE_CODE_LENGTH 8192
+#define MAX_SCRIPT_LENGTH 128
 #define MEMORY 8192
 #define MAX_PARAMS 3
-#define MAX_QUEUE_LENGTH 1
+#define MAX_QUEUE_LENGTH 128
 
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 
 #define GRID_SIZE 62
 
@@ -231,6 +232,37 @@ long long* readSourceCode(char *filename) {
   return memory;
 }
 
+char** readScript(char *filename) {
+  FILE *fp = NULL;
+  if ((fp = fopen(filename, "r")) == NULL) {
+      printf("[ERROR] Failed to open file %s\n", filename);
+      exit(EXIT_FAILURE);
+  }
+
+  char **script = (char**)malloc(MAX_SCRIPT_LENGTH * sizeof(char *));
+  for (int i = 0; i < MAX_SCRIPT_LENGTH; i++) {
+    script[i] = (char *)malloc(32 * sizeof(char));
+    memset(script[i], 0, 32 * sizeof(char));
+  }
+
+  int i = 0;
+  while (fgets(script[i++], 32, fp)) {
+  };
+  fclose(fp);
+
+  return script;
+}
+
+void addScriptInstruction(char *instruction, struct queue* queue) {
+  int length = strlen(instruction);
+  if (length) {
+    for (int c = 0; c < length; c++) {
+      queuePush(queue, instruction[c]);
+    }
+  }
+}
+
+
 void printGrid(char grid[GRID_SIZE][GRID_SIZE]) {
   for (int row = 0; row < GRID_SIZE; row++) {
     for (int col = 0; col < GRID_SIZE; col++) {
@@ -242,39 +274,52 @@ void printGrid(char grid[GRID_SIZE][GRID_SIZE]) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    printf("[ERROR] Missing parameter <filename>\n");
+  if (argc < 3) {
+    printf("[ERROR] Missing parameter <filename> <script>\n");
     exit(EXIT_FAILURE);
   }
 
   char *filename = argv[1];
+  char *scriptname = argv[2];
   long long *program = readSourceCode(filename);
+  program[0] = 2;
 
   char (*grid)[GRID_SIZE] = malloc(sizeof(char[GRID_SIZE][GRID_SIZE]));
   memset(grid, 0, sizeof(char[GRID_SIZE][GRID_SIZE]));
-
-  struct queue* ioQueues[2] = {
-    newQueue(0),
-    newQueue(0),
-  };
 
   int gR = 0;
   int gC = 0;
 
   struct programState* state = initState(program, 0);
+  struct queue* inputQueue = newQueue(0);
+  struct queue* outputQueue = newQueue(0);
+
+  char **script = readScript(scriptname);
+
+  for (int i = 0; i < MAX_SCRIPT_LENGTH; i++) {
+    addScriptInstruction(script[i], inputQueue);
+  }
+  
+  char input[64];
+  int mode = 0;
   while (!state->halt) {
-    int breakPoint = runProgram(state, ioQueues[0], ioQueues[1]);
+    int breakPoint = runProgram(state, inputQueue, outputQueue);
     if (breakPoint == 4) {
-      char value = queueGet(ioQueues[1]);
-      if (value == '\n') {
-        gR++;
-        gC = 0;
-      } else {
-        grid[gR][gC++] = value;
-      }
-      if (gR >= GRID_SIZE || gC >= GRID_SIZE) {
-        printf("Grid too small (row: %d, col: %d)\n", gR, gC);
-        exit(EXIT_FAILURE);
+      while (outputQueue->length) {
+        char value = queueGet(outputQueue);
+        printf("%c", value);
+        if (mode == 0) {
+          if (value == '\n') {
+            gR++;
+            gC = 0;
+          } else {
+            grid[gR][gC++] = value;
+          }
+          if (gR >= GRID_SIZE || gC >= GRID_SIZE) {
+            gR--;
+            mode = 1;
+          }
+        }
       }
     }
   }
@@ -290,11 +335,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  printGrid(grid);
+  while (outputQueue->length) {
+      printf("%c", (char) queueGet(outputQueue));
+  }
+
   printf("Part1: %d\n", part1);
 
   free(state);
-  free(ioQueues[0]);
-  free(ioQueues[1]);
+  free(inputQueue);
+  free(outputQueue);
   free(program);
 }
