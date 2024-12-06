@@ -111,7 +111,6 @@ int main(int argc, char *argv[]) {
 
   int part2 = 0;
   for (int r = 0; r < size; r++) {
-    printf("Testing r %d\n", r);
     for (int c = 0; c < size; c++) {
       if (masterMatrix[r][c] == '.') {
         for (int rc = 0; rc < size; rc++) memcpy(scratchMatrix[rc], masterMatrix[rc], sizeof(char) * size);
