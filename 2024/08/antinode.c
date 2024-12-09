@@ -18,7 +18,9 @@ int main(int argc, char *argv[]) {
 
   char matrix[64][64];
   char antinodes[64][64];
+  char resonantAntinodes[64][64];
   memset(antinodes, 0, sizeof(char) * 64 * 64);
+  memset(resonantAntinodes, 0, sizeof(char) * 64 * 64);
   int size = 0;
 
   char line[64];
@@ -41,8 +43,18 @@ int main(int argc, char *argv[]) {
 
             int ar = r2 + (dx * 2);
             int ac = c2 + (dy * 2);
+            
             if (ar >= 0 && ar < size && ac >= 0 && ac < size) {
               antinodes[ar][ac] = 1;
+            }
+
+            for (int i = -50; i <= 50; i++) {
+              int arRes = r2 + (dx * i);
+              int acRes = c2 + (dy * i);
+
+              if (arRes >= 0 && arRes < size && acRes >= 0 && acRes < size) {
+                resonantAntinodes[arRes][acRes] = 1;
+              }
             }
           }
         }
@@ -51,10 +63,13 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
       if (antinodes[r][c]) part1++;
+      if (resonantAntinodes[r][c]) part2++;
     }
   }
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
