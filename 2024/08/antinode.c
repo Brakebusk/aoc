@@ -41,19 +41,13 @@ int main(int argc, char *argv[]) {
             int dx = r - r2;
             int dy = c - c2;
 
-            int ar = r2 + (dx * 2);
-            int ac = c2 + (dy * 2);
-            
-            if (ar >= 0 && ar < size && ac >= 0 && ac < size) {
-              antinodes[ar][ac] = 1;
-            }
-
             for (int i = -50; i <= 50; i++) {
-              int arRes = r2 + (dx * i);
-              int acRes = c2 + (dy * i);
+              int ar = r2 + (dx * i);
+              int ac = c2 + (dy * i);
 
-              if (arRes >= 0 && arRes < size && acRes >= 0 && acRes < size) {
-                resonantAntinodes[arRes][acRes] = 1;
+              if (ar >= 0 && ar < size && ac >= 0 && ac < size) {
+                resonantAntinodes[ar][ac] = 1;
+                if (i == 2) antinodes[ar][ac] = 1;
               }
             }
           }
