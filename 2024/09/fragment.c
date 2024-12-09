@@ -22,17 +22,18 @@ int main(int argc, char *argv[]) {
   fgets(line, 21000, fp);
   fclose(fp);
 
-  int *result = malloc(sizeof(int) * LIM);
+  int *result1 = malloc(sizeof(int) * LIM);
+  int *result2 = malloc(sizeof(int) * LIM);
   int length = 0;
 
   int index = 0;
   for (int c = 0; c < strlen(line); c++) {
     char v = line[c] - '0';
     if (c % 2 == 0) {
-      for (int i = 0; i < v; i++) result[i+length] = index;
+      for (int i = 0; i < v; i++) result1[i+length] = index;
       index++;
     } else {
-      for (int i = 0; i < v; i++) result[i+length] = -1;
+      for (int i = 0; i < v; i++) result1[i+length] = -1;
     }
     length += v;
     if (length >= LIM) {
@@ -41,29 +42,72 @@ int main(int argc, char *argv[]) {
     }
   }
   free(line);
+  memcpy(result2, result1, sizeof(int) * LIM);
 
   for (int i = length - 1; i >= 0; i--) {
-    if (result[i] > -1) {
+    if (result1[i] > -1) {
       int place = -1;
       for (int j = 0; j < i; j++) {
-        if (result[j] == -1) {
+        if (result1[j] == -1) {
           place = j;
           break;
         }
       }
       if (place > -1) {
-        result[place] = result[i];
-        result[i] = -1;
+        result1[place] = result1[i];
+        result1[i] = -1;
       }
+    }
+  }
+
+  for (int i = length - 1; i >= 0; i--) {
+    if (result2[i] > -1) {
+      int fileSize = 0;
+      int v = result2[i];
+      for (int j = i; j >= 0; j--) {
+        if (result2[j] != v) break;
+        fileSize++;
+      }
+      int place = -1;
+      for (int j = 0; j < i; j++) {
+        int found = 1;
+        for (int o = 0; o < fileSize; o++) {
+          if (result2[j+o] != -1) {
+            found = 0;
+            break;
+          }
+        }
+        if (found) {
+          place = j;
+          break;
+        }
+      }
+      if (place > -1) {
+        for (int p = 0; p < fileSize; p++) {
+          result2[i - p] = -1;
+        }
+        for (int p = place; p < place + fileSize; p++) {
+          result2[p] = v;
+        }
+      }
+      i -= fileSize - 1;
     }
   }
   
   long long part1 = 0;
+  long long part2 = 0;
   for (int i = 0; i < length; i++) {
-    if (result[i] == -1) break;
-    part1 += i * result[i];
+    if (result1[i] == -1) break;
+    part1 += i * result1[i];
+  }
+  for (int i = 0; i < length; i++) {
+    if (result2[i] > -1) {
+      part2 += i * result2[i];
+    }
   }
   printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
 
-  free(result);
+  free(result1);
+  free(result2);
 }
