@@ -103,11 +103,13 @@ int main(int argc, char *argv[]) {
 
   long long part1 = 0;
   long long part2 = 0;
+  
   for (int i = 0; i < equationCount; i++) {
     struct equation e = equations[i];
     part1 += test(e, 2);    
     part2 += test(e, 3);
   }
+  
   printf("Part 1: %lld\n", part1);
   printf("Part 2: %lld\n", part2);
 }
