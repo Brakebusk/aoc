@@ -6,17 +6,17 @@ char matrix[50][50];
 int size = 0;
 
 // from top = 0, right, down, left
-int traverse(int r, int c, int from) {
+int traverse(int r, int c, int from, int part) {
   char v = matrix[r][c];
   if (v == 9) {
-    matrix[r][c] = -2;
+    if (part == 1) matrix[r][c] = -2;
     return 1;
   }
   int sum = 0;
-  if (from != 0 && r > 0 && matrix[r-1][c] == v+1) sum += traverse(r-1, c, 2);
-  if (from != 1 && c < size-1 && matrix[r][c+1] == v+1) sum += traverse(r, c+1, 3);
-  if (from != 2 && r < size-1 && matrix[r+1][c] == v+1) sum += traverse(r+1, c, 0);
-  if (from != 3 && c > 0 && matrix[r][c-1] == v+1) sum += traverse(r, c-1, 1);
+  if (from != 0 && r > 0 && matrix[r-1][c] == v+1) sum += traverse(r-1, c, 2, part);
+  if (from != 1 && c < size-1 && matrix[r][c+1] == v+1) sum += traverse(r, c+1, 3, part);
+  if (from != 2 && r < size-1 && matrix[r+1][c] == v+1) sum += traverse(r+1, c, 0, part);
+  if (from != 3 && c > 0 && matrix[r][c-1] == v+1) sum += traverse(r, c-1, 1, part);
   return sum;
 }
 
@@ -49,10 +49,12 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
       if (matrix[r][c] == 0) {
-        part1 += traverse(r, c, -1);
+        part2 += traverse(r, c, -1, 2);
+        part1 += traverse(r, c, -1, 1);
         for (int cr = 0; cr < size; cr++) {
           for (int cc = 0; cc < size; cc++) {
             if (matrix[cr][cc] == -2) matrix[cr][cc] = 9;
@@ -62,4 +64,5 @@ int main(int argc, char *argv[]) {
     }
   }
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
