@@ -105,6 +105,7 @@ int main(int argc, char *argv[]) {
       part2 += i * result2[i];
     }
   }
+  
   printf("Part 1: %lld\n", part1);
   printf("Part 2: %lld\n", part2);
 
