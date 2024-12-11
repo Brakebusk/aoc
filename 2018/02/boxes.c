@@ -18,11 +18,14 @@ int main(int argc, char *argv[]) {
 
   int two = 0;
   int three = 0;
+  char boxes[250][32];
+  int count = 0;
 
   char line[32];
   int length = 0;
   while(fgets(line, 32, fp)) {
     if (length == 0) length = strlen(line) - 1;
+    strncpy(boxes[count++], line, length);
     
     char counts[26] = {0};
     for (int i = 0; i < length; i++) counts[line[i] - 'a']++;
@@ -40,6 +43,23 @@ int main(int argc, char *argv[]) {
     }
   }
   fclose(fp);
-
   printf("Part 1: %d\n", two * three);
+
+  for (int b = 0; b < count; b++) {
+    for (int i = 0; i < count; i++) {
+      if (b != i) {
+        char common[32] = {0};
+        int commonCount = 0;
+        for (int c = 0; c < length; c++) {
+          if (boxes[b][c] == boxes[i][c]) {
+            common[commonCount++] = boxes[i][c];
+          }
+        }
+        if (commonCount == length - 1) {
+          printf("Part 2: %s\n", common);
+          count = 0;
+        }
+      }
+    }
+  }
 }
