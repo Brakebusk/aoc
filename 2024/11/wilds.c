@@ -1,14 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <search.h>
 
-#define MAX_STONES 250000
+long long countStones(long long value, int remainingIters) {
+  if (remainingIters == 0) return 1;
+  
+  ENTRY entry;
+  entry.key = malloc(30);
+  sprintf(entry.key, "%lld-%d", value, remainingIters);
 
-void printStones(long long stones[MAX_STONES], int count) {
-  for (int i = 0; i < count; i++) {
-    printf("%lld ", stones[i]);
+  ENTRY *found = hsearch(entry, FIND);
+  if (found != NULL) {
+    free(entry.key);
+    return *(long long *)found->data;
   }
-  printf("\n");
+
+  char str[24] = {0};
+  sprintf(str, "%lld", value);
+  int len;
+  
+  long long result;
+  if (value == 0) {
+    result = countStones(1, remainingIters - 1);
+  } else if ((len = strlen(str)) % 2 == 0) {
+    char half1[12] = {0}, half2[12] = {0};
+    strncpy(half1, str, len / 2);
+    strncpy(half2, &str[len/2], len / 2);
+    
+    result = countStones(atoll(half1), remainingIters - 1) + countStones(atoll(half2), remainingIters - 1);
+  } else  {
+    result = countStones(value * 2024, remainingIters - 1);
+  }
+
+  entry.data = malloc(sizeof(long long));
+  *(long long *)entry.data = result;
+  hsearch(entry, ENTER);
+
+  return result;
 }
 
 int main(int argc, char *argv[]) {
@@ -29,42 +58,24 @@ int main(int argc, char *argv[]) {
   fgets(line, 64, fp);
   fclose(fp);
 
-  long long stones[MAX_STONES];
+  long long stones[10];
   int count = 0;
 
   char *token;
   while ((token = strtok(token ? NULL : line, " "))) {
     stones[count++] = atoll(token);
   }
-  
-  for (int i = 0; i < 25; i++) {
-    for (int s = 0; s < count; s++) {
-      char str[24] = {0};
-      sprintf(str, "%lld", stones[s]);
-      int len;
-      
-      if (stones[s] == 0) {
-        stones[s] = 1;
-      } else if ((len = strlen(str)) % 2 == 0) {
-        char half1[12] = {0}, half2[12] = {0};
-        strncpy(half1, str, len / 2);
-        strncpy(half2, &str[len/2], len / 2);
-        stones[s] = atoll(half1);
-        for (int shift = count-1; shift > s; shift--) {
-          stones[shift + 1] = stones[shift];
-        }
-        stones[s+1] = atoll(half2);
-        count++;
-        if (count > MAX_STONES) {
-          printf("[ERROR] Too many stones");
-          exit(EXIT_FAILURE);
-        }
-        s++;
-      } else  {
-       stones[s] *= 2024; 
-      }
-    }
-  }
 
-  printf("Part 1: %d\n", count);
+  hcreate(500000);
+
+  long long part1 = 0;
+  long long part2 = 0;
+  for (int s = 0; s < count; s++) {
+    part1 += countStones(stones[s], 25);
+    part2 += countStones(stones[s], 75);
+  }
+  printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
+  
+  hdestroy();
 }
