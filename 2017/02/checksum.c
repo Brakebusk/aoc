@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[128];
   while(fgets(line, 128, fp)) {
@@ -34,10 +35,18 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < count; i++) {
       if (values[i] < min) min = values[i];
       if (values[i] > max) max = values[i];
+
+      for (int j = 0; j < count; j++) {
+        int div;
+        if (i != j && values[i] > values[j] && values[i] == (div = values[i] / values[j]) * values[j]) {
+          part2 += div;
+        }
+      }
     }
     part1 += max - min;
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
