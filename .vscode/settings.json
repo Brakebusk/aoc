@@ -12,6 +12,7 @@
     "tuple": "c",
     "variant": "c",
     "queue": "c",
-    "stack": "c"
+    "stack": "c",
+    "stdio.h": "c"
   }
 }
