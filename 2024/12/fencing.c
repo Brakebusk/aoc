@@ -43,6 +43,34 @@ int countPerimeter(int matrix[150][150], int size, int r, int c, int id) {
   return count;
 }
 
+int countCorners(int matrix[150][150], int size, int r, int c) {
+  char neighbours[3][3] = {
+    {0, 0, 0},
+    {0, 1, 0},
+    {0, 0, 0},
+  };
+  int id = matrix[r][c];
+  if (r > 0) {
+    if (c > 0 && matrix[r-1][c-1] == id) neighbours[0][0] = 1;
+    if (matrix[r-1][c] == id) neighbours[0][1] = 1;
+    if (c < size-1 && matrix[r-1][c+1] == id) neighbours[0][2] = 1;
+  }
+  if (c > 0 && matrix[r][c-1] == id) neighbours[1][0] = 1;
+  if (c < size-1 && matrix[r][c+1] == id) neighbours[1][2] = 1;
+  if (r < size-1) {
+    if (c > 0 && matrix[r+1][c-1] == id) neighbours[2][0] = 1;
+    if (matrix[r+1][c] == id) neighbours[2][1] = 1;
+    if (c < size-1 && matrix[r+1][c+1] == id) neighbours[2][2] = 1;
+  }
+
+  int corners = 0;
+  if ((neighbours[0][1] == 1 && neighbours[1][0] == 1 && neighbours[0][0] == 0) || (neighbours[0][1] == 0 && neighbours[1][0] == 0)) corners++;
+  if ((neighbours[0][1] == 1 && neighbours[1][2] == 1 && neighbours[0][2] == 0) || (neighbours[0][1] == 0 && neighbours[1][2] == 0)) corners++;
+  if ((neighbours[1][0] == 1 && neighbours[2][1] == 1 && neighbours[2][0] == 0) || (neighbours[1][0] == 0 && neighbours[2][1] == 0)) corners++;
+  if ((neighbours[1][2] == 1 && neighbours[2][1] == 1 && neighbours[2][2] == 0) || (neighbours[1][2] == 0 && neighbours[2][1] == 0)) corners++;
+  return corners;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -69,8 +97,9 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  int regionSizes[MAX_REGIONS];
-  int regionPerimeters[MAX_REGIONS];
+  int regionSizes[MAX_REGIONS] = {0};
+  int regionPerimeters[MAX_REGIONS] = {0};
+  int regionSides[MAX_REGIONS] = {0};
   int regionCount = 0;
 
   for (int r = 0; r < size; r++) {
@@ -91,10 +120,19 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+
+  for (int r = 0; r < size; r++) {
+    for (int c = 0; c < size; c++) {
+      regionSides[-matrix[r][c]-1] += countCorners(matrix, size, r, c);
+    }
+  }
   
   int part1 = 0;
+  int part2 = 0;
   for (int i = 0; i < regionCount; i++) {
     part1 += regionSizes[i] * regionPerimeters[i];
+    part2 += regionSizes[i] * regionSides[i];
   }
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
