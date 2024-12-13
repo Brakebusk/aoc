@@ -9,13 +9,13 @@ struct machine {
 
 long long solve(struct machine m) {
   long long numeratorX = m.x * m.bdy - m.y * m.bdx;
-  long long denomiatorX = m.adx * m.bdy - m.ady * m.bdx;
+  long long denominatorX = m.adx * m.bdy - m.ady * m.bdx;
       
   long long numeratorY = m.x * m.ady - m.y * m.adx;
-  long long denomiatorY = m.ady * m.bdx - m.adx * m.bdy;
+  long long denominatorY = m.ady * m.bdx - m.adx * m.bdy;
 
-  if (numeratorX % denomiatorX == 0 && numeratorY % denomiatorY == 0) {
-    return 3 * (numeratorX / denomiatorX) + (numeratorY / denomiatorY);
+  if (numeratorX % denominatorX == 0 && numeratorY % denominatorY == 0) {
+    return 3 * (numeratorX / denominatorX) + (numeratorY / denominatorY);
   }
   return 0;
 }
