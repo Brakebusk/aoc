@@ -4,7 +4,7 @@
 #include <limits.h>
 
 struct machine {
-  int adx, ady, bdx, bdy, x, y;
+  long long adx, ady, bdx, bdy, x, y;
 };
 
 int main(int argc, char *argv[]) {
@@ -27,20 +27,20 @@ int main(int argc, char *argv[]) {
   char line[32];
   int mode = 0;
   while(fgets(line, 32, fp)) {
-    int i, j;
+    long long i, j;
     switch (mode) {
       case 0:
-        sscanf(line, "Button A: X+%d, Y+%d", &i, &j);
+        sscanf(line, "Button A: X+%lld, Y+%lld", &i, &j);
         machines[count].adx = i;
         machines[count].ady = j;
         break;
       case 1:
-        sscanf(line, "Button B: X+%d, Y+%d", &i, &j);
+        sscanf(line, "Button B: X+%lld, Y+%lld", &i, &j);
         machines[count].bdx = i;
         machines[count].bdy = j;
         break;
       case 2:
-        sscanf(line, "Prize: X=%d, Y=%d", &i, &j);
+        sscanf(line, "Prize: X=%lld, Y=%lld", &i, &j);
         machines[count].x = i;
         machines[count].y = j;
         break;
@@ -52,20 +52,35 @@ int main(int argc, char *argv[]) {
   count++;
   fclose(fp);
 
-  int part1 = 0;
+  long long part1 = 0;
+  long long part2 = 0;
   for (int i = 0; i < count; i++) {
     struct machine m = machines[i];
-    int minTokens = INT_MAX;
+    long long minTokens = LLONG_MAX;
     for (int a = 0; a < 101; a++) {
       for (int b = 0; b < 101; b++) {
         if (m.adx * a + m.bdx * b == m.x && m.ady * a + m.bdy * b == m.y) {
-          int tokens = 3 * a + b;
+          long long tokens = 3 * a + b;
           if (tokens < minTokens) minTokens = tokens;
         }
       }
     }
-    if (minTokens < INT_MAX) part1 += minTokens;
+    if (minTokens < LLONG_MAX) part1 += minTokens;
+
+    long long p2x = m.x + 10000000000000;
+    long long p2y = m.y + 10000000000000;
+    
+    long long numeratorX = p2x * m.bdy - p2y * m.bdx;
+    long long denomiatorX = m.adx * m.bdy - m.ady * m.bdx;
+        
+    long long numeratorY = p2x * m.ady - p2y * m.adx;
+    long long denomiatorY = m.ady * m.bdx - m.adx * m.bdy;
+
+    if (numeratorX % denomiatorX == 0 && numeratorY % denomiatorY == 0) {
+      part2 += 3 * (numeratorX / denomiatorX) + (numeratorY / denomiatorY);
+    }
   }
 
-  printf("Part 1: %d\n", part1);
+  printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
 }
