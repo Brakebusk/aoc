@@ -2,6 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 
+// -1 = up, 1 = down
+int moveWideBoxes(char matrix[64][128], int width, int height, int row, int anyCol, int direction, int doIt) {
+  int col = anyCol;
+  if (matrix[row][col] == ']') col -= 1;
+  
+  if (matrix[row+direction][col] == '#' || matrix[row+direction][col+1] == '#') return 0;
+  
+  
+  int leftCanMove = 0, rightCanMove = 0;
+  if (matrix[row+direction][col] == '.') {
+    leftCanMove = 1;
+  } else leftCanMove = moveWideBoxes(matrix, width, height, row+direction, col, direction, doIt);
+  if (matrix[row+direction][col+1] == '.') {
+    rightCanMove = 1;
+  } else rightCanMove = moveWideBoxes(matrix, width, height, row+direction, col+1, direction, doIt);
+
+  if (doIt) {
+    matrix[row+direction][col] = matrix[row][col];
+    matrix[row+direction][col+1] = matrix[row][col+1];
+    matrix[row][col] = '.';
+    matrix[row][col+1] = '.';
+  }
+
+  return leftCanMove && rightCanMove;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -17,7 +43,9 @@ int main(int argc, char *argv[]) {
   }
 
   char matrix[64][64];
+  char wideMatrix[64][128];
   memset(matrix, 0, 64 * 64);
+  memset(wideMatrix, 0, 64 * 128);
   int size = 0;
 
   char moves[22000] = {0};
@@ -40,6 +68,35 @@ int main(int argc, char *argv[]) {
     }
   }
   fclose(fp);
+
+  int width = size * 2;
+  int height = size;
+  for (int r = 0; r < size; r++) {
+    for (int c = 0; c < size; c++) {
+      switch(matrix[r][c]) {
+        case '#':
+          wideMatrix[r][2*c] = '#';
+          wideMatrix[r][2*c+1] = '#';
+          break;
+        case 'O':
+          wideMatrix[r][2*c] = '[';
+          wideMatrix[r][2*c+1] = ']';
+          break;
+        case '.':
+          wideMatrix[r][2*c] = '.';
+          wideMatrix[r][2*c+1] = '.';
+          break;
+        case '@':
+          wideMatrix[r][2*c] = '@';
+          wideMatrix[r][2*c+1] = '.';
+          break;
+        default:
+          printf("Unknown tile: '%c'\n", matrix[r][c]);
+          exit(EXIT_FAILURE);
+      }
+    }
+  }
+
 
   int row = -1, col = -1;
   for (int r = 0; r < size && row == -1; r++) {
@@ -138,11 +195,97 @@ int main(int argc, char *argv[]) {
     }
   }
 
+
+  for (int r = 0; r < height; r++) {
+    for (int c = 0; c < width; c++) {
+      if (wideMatrix[r][c] == '@') {
+        row = r;
+        col = c;
+        wideMatrix[r][c] = '.';
+        break;
+      }
+    }
+  }
+
+  for (int i = 0; i < moveCount; i++) {
+    char move = moves[i];
+    switch (move) {
+      case '^':
+        if (wideMatrix[row-1][col] == '.') {
+          row--;
+        } else if (wideMatrix[row-1][col] == '[' || wideMatrix[row-1][col] == ']') {
+          if (moveWideBoxes(wideMatrix, width, height, row-1, col, -1, 0)) {
+            moveWideBoxes(wideMatrix, width, height, row-1, col, -1, 1);
+            row--;
+          }
+        }
+        break;
+      case '>':
+        if (wideMatrix[row][col+1] == '.') {
+          col++;
+        } else if (wideMatrix[row][col+1] == '[') {
+          int found = -1;
+          for (int c = col+1; c < width - 1; c++) {
+            if (wideMatrix[row][c] == '.') {
+              found = c;
+              break;
+            } else if (wideMatrix[row][c] == '#') break;
+          }
+          if (found > -1) {
+            for (int shift = found; shift > col; shift--) {
+              wideMatrix[row][shift] = wideMatrix[row][shift-1];
+            }
+            col++;
+          }
+        }
+        break;
+      case 'v':
+        if (wideMatrix[row+1][col] == '.') {
+          row++;
+        } else if (wideMatrix[row+1][col] == '[' || wideMatrix[row+1][col] == ']') {
+          if (moveWideBoxes(wideMatrix, width, height, row+1, col, 1, 0)) {
+            moveWideBoxes(wideMatrix, width, height, row+1, col, 1, 1);
+            row++;
+          }
+        }
+        break;
+      case '<':
+        if (wideMatrix[row][col-1] == '.') {
+          col--;
+        } else if (wideMatrix[row][col-1] == ']') {
+          int found = -1;
+          for (int c = col-1; c > 0; c--) {
+            if (wideMatrix[row][c] == '.') {
+              found = c;
+              break;
+            } else if (wideMatrix[row][c] == '#') break;
+          }
+          if (found > -1) {
+            for (int shift = found; shift < col; shift++) {
+              wideMatrix[row][shift] = wideMatrix[row][shift+1];
+            }
+            col--;
+          }
+        }
+        break;
+      default:
+        printf("Unknown move: '%c'\n", move);
+        exit(EXIT_FAILURE);
+    }
+  }
+
   int part1 = 0;
+  int part2 = 0;
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
       if (matrix[r][c] == 'O') part1 += 100 * r + c;
     }
   }
+  for (int r = 0; r < height; r++) {
+    for (int c = 0; c < width; c++) {
+      if (wideMatrix[r][c] == '[') part2 += 100 * r + c;
+    }
+  }
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
