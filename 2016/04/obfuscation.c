@@ -36,6 +36,10 @@ int main(int argc, char *argv[]) {
 
   char line[100];
   while(fgets(line, 100, fp)) {
+    unsigned char name[64];
+    int nameLength = 0;
+    memset(name, 0, 64);
+
     char *token = strtok(line, "[");
 
     struct letter count[26];
@@ -51,9 +55,10 @@ int main(int argc, char *argv[]) {
           id *= 10;
           id += token[i] - '0';
         } else {
+          name[nameLength++] = token[i];
           count[token[i]-'a'].frequency++;
         }
-      }
+      } else name[nameLength++] = token[i];
     }
 
     qsort(count, 26, sizeof(struct letter), compare);
@@ -67,8 +72,18 @@ int main(int argc, char *argv[]) {
         break;
       }
     }
-    if (valid) part1 += id;
-    
+    if (valid) {
+      part1 += id;
+
+      for (int i = 0; i < strlen((char *)name); i++) {
+        if (name[i] != '-') {
+          name[i] = name[i] + (id % 26);
+          if (name[i] > 'z') name[i] -= 26;
+        } else name[i] = ' ';
+
+      }
+      printf("%d: %s\n", id, name);
+    }
   }
   fclose(fp);
 
