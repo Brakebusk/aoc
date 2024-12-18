@@ -2,11 +2,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-int compare(const void *a, const void *b) {
+int compareStrings(const void *a, const void *b) {
     const char *str1 = (const char *)a;
     const char *str2 = (const char *)b;
     return strcmp(str1, str2);
 }
+
+int compareLetters(const void* a, const void* b) {
+   return (*(char*)a - *(char*)b);
+}
+
+int validateList(char words[16][16], int wordCount) {
+  qsort(words, wordCount, 16, compareStrings);
+
+  for (int i = 0; i < wordCount-1; i++) {
+    if (strcmp(words[i], words[i+1]) == 0) {
+      return 0;
+    }
+  }
+  
+  return 1;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -22,6 +39,7 @@ int main(int argc, char *argv[]) {
   }
 
   int part1 = 0;
+  int part2 = 0;
 
   char line[128];
   while(fgets(line, 128, fp)) {
@@ -33,18 +51,15 @@ int main(int argc, char *argv[]) {
       strcpy(words[wordCount++], token);
     }
 
-    qsort(words, wordCount, 16, compare);
+    if (validateList(words, wordCount)) part1++;
 
-    int valid = 1;
-    for (int i = 0; i < wordCount-1; i++) {
-      if (strcmp(words[i], words[i+1]) == 0) {
-        valid = 0;
-        break;
-      }
+    for (int i = 0; i < wordCount; i++) {
+      qsort(words[i], strlen(words[i]), 1, compareLetters);
     }
-    if (valid) part1++;
+    if (validateList(words, wordCount)) part2++;
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
