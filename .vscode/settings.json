@@ -13,6 +13,8 @@
     "variant": "c",
     "queue": "c",
     "stack": "c",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "string_view": "c",
+    "initializer_list": "c"
   }
 }
