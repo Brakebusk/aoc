@@ -18,6 +18,9 @@ int main(int argc, char *argv[]) {
 
   int part1 = 0;
 
+  int seats[1024];
+  memset(seats, 0, sizeof(int) * 1024);
+
   char line[16];
   while(fgets(line, 16, fp)) {
     int minRow = 0, maxRow = 127, minCol = 0, maxCol = 7;
@@ -53,9 +56,17 @@ int main(int argc, char *argv[]) {
     }
     
     int id = minRow * 8 + minCol;
+    seats[id] = 1;
     if (id > part1) part1 = id;
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+
+  for (int i = 1; i < 1024-1; i++) {
+    if (seats[i-1] && !seats[i] && seats[i+1]) {
+      printf("Part 2: %d\n", i);
+      break;
+    }
+  }
 }
