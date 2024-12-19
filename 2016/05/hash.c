@@ -238,17 +238,31 @@ int main(int argc, char *argv[]) {
   uint8_t result[16];
 
   char password[9];
+  char password2[9];
   memset(password, 0, 9);
+  memset(password2, 0, 9);
   int length = 0;
   
   while (++counter) {
     sprintf(input, "%s%d", key, counter);
     md5String(input, result);
     if (verify(result, 5)) {
-      sprintf(&password[length++], "%x", result[2]);
-      if (length == 8) break;
+      char position[2] = {0};
+      char value[3] = {0};
+      sprintf(position, "%x", result[2]);
+      sprintf(value, "%02x", result[3]);
+
+      if (position[0] < '8' && position[0] >= '0' && password2[position[0] - '0'] == 0) {
+        password2[position[0] - '0'] = value[0];
+      }
+
+      if (length < 8) {
+        sprintf(&password[length++], "%x", result[2]);
+      }
+      if (strlen(password2) == 8) break;
     }
   }
 
   printf("Part 1: %s\n", password);
+  printf("Part 2: %s\n", password2);
 }
