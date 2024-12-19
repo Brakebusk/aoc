@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
   }
 
   int memory[1200];
+  int clone[1200];
   int length = 0;
 
   char line[8];
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
     memory[length++] = atoi(line);
   }
   fclose(fp);
+  memcpy(clone, memory, sizeof(int) * 1200);
 
   int ip = 0;
   int steps = 0;
@@ -33,4 +35,15 @@ int main(int argc, char *argv[]) {
     steps++;
   }
   printf("Part 1: %d\n", steps);
+
+  ip = 0;
+  steps = 0;
+  while (ip >= 0 && ip < length) {
+    int delta = 1;
+    if (clone[ip] >= 3) delta = -1;
+    clone[ip] += delta;
+    ip += clone[ip] - delta;
+    steps++;
+  }
+  printf("Part 2: %d\n", steps);
 }
