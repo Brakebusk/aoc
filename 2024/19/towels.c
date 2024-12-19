@@ -6,7 +6,7 @@
 char patterns[512][16];
 int patternCount = 0; 
 
-int validate(char design[64]) {
+long long validate(char design[64]) {
   if (strlen(design) == 0) return 1;
 
   ENTRY entry;
@@ -16,9 +16,10 @@ int validate(char design[64]) {
   ENTRY *found = hsearch(entry, FIND);
   if (found != NULL) {
     free(entry.key);
-    return *(int *)found->data;
+    return *(long long *)found->data;
   }
 
+  long long possibleArrangements = 0;
   for (int i = 0; i < patternCount; i++) {
     char *pattern = patterns[i];
     int pLength = strlen(pattern);
@@ -30,18 +31,13 @@ int validate(char design[64]) {
       }
     }
 
-    if (matches && validate(&design[pLength])) {
-      entry.data = malloc(sizeof(int));
-      *(int *)entry.data = 1;
-      hsearch(entry, ENTER);
-      return 1;
-    }
+    if (matches) possibleArrangements += validate(&design[pLength]);
   }
 
-  entry.data = malloc(sizeof(int));
-  *(int *)entry.data = 0;
+  entry.data = malloc(sizeof(long long));
+  *(long long *)entry.data = possibleArrangements;
   hsearch(entry, ENTER);
-  return 0;
+  return possibleArrangements;
 }
 
 int main(int argc, char *argv[]) {
@@ -60,7 +56,8 @@ int main(int argc, char *argv[]) {
 
   hcreate(20000);
 
-  int part1 = 0;
+  long long part1 = 0;
+  long long part2 = 0;
 
   char line[3000];
   int mode = 0;
@@ -77,13 +74,16 @@ int main(int argc, char *argv[]) {
       char design[64];
       memset(design, 0, 64);
       strncpy(design, line, length);
-      part1 += validate(design);
+      long long arrangements = validate(design);
+      if (arrangements) part1++;
+      part2 += arrangements;
     }
     mode++;
   }
   fclose(fp);
 
-  printf("Part 1: %d\n", part1);
+  printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
 
   hdestroy();
 }
