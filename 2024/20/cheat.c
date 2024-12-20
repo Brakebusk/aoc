@@ -35,25 +35,14 @@ void reset(int distances[150][150], int size, int startR, int startC) {
   distances[startR][startC] = 0;
 }
 
-int testCheat(char matrix[150][150], int distances[150][150], int size, int r, int c, int startR, int startC) {
-  if (matrix[r][c] == '#') {
-    matrix[r][c] = '.';
-    reset(distances, size, startR, startC);
-    traverse(matrix, distances, startR, startC, size);
-    matrix[r][c] = '#';
-    return distances[endR][endC];
-  }
-  return INT_MAX;
-}
-
-void megaCheat(char matrix[150][150], int normalDistances[150][150], int timeSaved[10000], int size, int cheatR, int cheatC, int startR, int startC) {
+void testCheat(char matrix[150][150], int normalDistances[150][150], int timeSaved[10000], int size, int cheatR, int cheatC, int startR, int startC, int cheatLength) {
   if (matrix[cheatR][cheatC] == '.' && normalDistances[cheatR][cheatC] < INT_MAX) {
-    for (int r = cheatR - 21; r < cheatR + 21; r++) {
-      for (int c = cheatC - 21; c < cheatC + 21; c++) {
-        if (r > 0 && r < size && c > 0 && c < size && (r != cheatR || c != cheatC) && matrix[r][c] == '.')  {
+    for (int r = cheatR - cheatLength; r <= cheatR + cheatLength; r++) {
+      for (int c = cheatC - cheatLength; c <= cheatC + cheatLength; c++) {
+        if (r >= 0 && r < size && c >= 0 && c < size && matrix[r][c] == '.')  {
           int manhattan = abs(cheatR - r) + abs(cheatC - c);
 
-          if (manhattan < 20) {
+          if (manhattan > 0 && manhattan <= cheatLength) {
             int cheatRemaining[150][150];
             reset(cheatRemaining, size, r, c);
             traverse(matrix, cheatRemaining, r, c, size);
@@ -100,9 +89,11 @@ int main(int argc, char *argv[]) {
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
       if (matrix[r][c] == 'S') {
+        matrix[r][c] = '.';
         startR = r;
         startC = c;
       } else if (matrix[r][c] == 'E') {
+        matrix[r][c] = '.';
         endR = r;
         endC = c;
       }
@@ -118,14 +109,10 @@ int main(int argc, char *argv[]) {
   traverse(matrix, distances, startR, startC, size);
   int benchmark = distances[endR][endC];
 
-  int normalDistances[150][150];
-  reset(normalDistances, size, startR, startC);
-  traverse(matrix, normalDistances, startR, startC, size);
   for (int r = 1; r < size - 1; r++) {
     for (int c = 1; c < size - 1; c++) {
-      int test = testCheat(matrix, distances, size, r, c, startR, startC);
-      if (test < benchmark) timeSaved[benchmark - test]++;
-      megaCheat(matrix, normalDistances, megaSaved, size, r, c, startR, startC);
+      testCheat(matrix, distances, timeSaved, size, r, c, startR, startC, 2);
+      testCheat(matrix, distances, megaSaved, size, r, c, startR, startC, 20);
     }
   }
 
