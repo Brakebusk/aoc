@@ -3,7 +3,7 @@
 #include <string.h>
 
 struct pair {
-  char lsb, delta;
+  char lsd, delta;
 };
 
 struct pair monkeys[1700][2001];
@@ -23,7 +23,7 @@ long long getBestSequence() {
           for (int m = 0; m < monkeyCount; m++) {
             for (int i = 1; i < 2001-4; i++) {
               if (monkeys[m][i].delta == a && monkeys[m][i+1].delta == b && monkeys[m][i+2].delta == c && monkeys[m][i+3].delta == d) {
-                acc += monkeys[m][i+3].lsb;
+                acc += monkeys[m][i+3].lsd;
                 break;
               }
             }
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
   while(fgets(line, 16, fp)) {
     long long secret = atoll(line);
 
-    monkeys[monkeyCount][0].lsb = lsd(secret);
+    monkeys[monkeyCount][0].lsd = lsd(secret);
 
     for (int i = 0; i < 2000; i++) {
       secret ^= secret * 64;
@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
       secret ^= secret * 2048,
       secret %= 16777216;
 
-      monkeys[monkeyCount][i+1].lsb = lsd(secret);
-      monkeys[monkeyCount][i+1].delta = lsd(secret) - monkeys[monkeyCount][i].lsb;
+      monkeys[monkeyCount][i+1].lsd = lsd(secret);
+      monkeys[monkeyCount][i+1].delta = lsd(secret) - monkeys[monkeyCount][i].lsd;
     }
     part1 += secret;
     monkeyCount++;
