@@ -10,6 +10,58 @@ struct node {
   int count;
 };
 
+char largestGroup[32][3];
+
+int compareStrings(const void *a, const void *b) {
+    const char *str1 = (const char *)a;
+    const char *str2 = (const char *)b;
+    return strcmp(str1, str2);
+}
+
+int group(struct node nodes[550], int nodeCount, char present[32][3], int pCount, int progress, int depth, int requirePrefix) {
+  if (depth == 0) {
+    memcpy(largestGroup, present, 32*3);
+    int tprefix = 0;
+    if (requirePrefix) {
+      for (int p = 0; p < pCount; p++) {
+        if (present[p][0] == 't') {
+          tprefix = 1;
+          break;
+        }
+      }
+    }
+    return requirePrefix ? tprefix : 1;
+  } else {
+    int count = 0;
+
+    for (int i = progress; i < nodeCount; i++) {
+      struct node n = nodes[i];
+
+      int connectedToAllPresent = 1;
+      for (int p = 0; p < pCount; p++) {
+        int found = 0;
+        for (int c = 0; c < n.count; c++) {
+          if (strcmp(n.connections[c]->name, present[p]) == 0) {
+            found = 1;
+            break;
+          }
+        }
+        if (!found) {
+          connectedToAllPresent = 0;
+          break;
+        }
+      }
+
+      if (connectedToAllPresent) {
+        strcpy(present[pCount], n.name);
+        count += group(nodes, nodeCount, present, pCount+1, i+1, depth-1, requirePrefix);
+      }
+    }
+
+    return count;
+  }
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -60,39 +112,20 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  int part1 = 0;
+  char present[32][3];
+  printf("Part 1: %d\n", group(nodes, nodeCount, present, 0, 0, 3, 1));
 
-  for (int i = 0; i < nodeCount; i++) {
-    struct node n1 = nodes[i];
-
-    for (int j = i+1; j < nodeCount; j++) {
-      struct node n2 = nodes[j];
-
-      for (int k = j+1; k < nodeCount; k++) {
-        struct node n3 = nodes[k];
-
-        int n1n2 = 0;
-        int n1n3 = 0;
-        for (int c = 0; c < n1.count; c++) {
-          if (strcmp(n2.name, n1.connections[c]->name) == 0) {
-            n1n2 = 1;
-          } else if (strcmp(n3.name, n1.connections[c]->name) == 0) {
-            n1n3 = 1;
-          }
-        }
-        int n2n3 = 0;
-        for (int c = 0; c < n2.count; c++) {
-          if (strcmp(n3.name, n2.connections[c]->name) == 0) {
-            n2n3 = 1;
-          }
-        }
-        
-        if (n1n2 && n1n3 && n2n3) {
-          if (n1.name[0] == 't' || n2.name[0] == 't' || n3.name[0] == 't') part1++;
-        }
+  for (int i = 4; i < 15; i++) {
+    int found = group(nodes, nodeCount, present, 0, 0, i, 0);
+    if (found == 1) {
+      qsort(largestGroup, i, 3, compareStrings);
+      printf("Part 2: ");
+      for (int f = 0; f < i; f++) {
+        if (f > 0) printf(",");
+        printf("%s", largestGroup[f]);
       }
+      printf("\n");
+      break;
     }
   }
-
-  printf("Part 1: %d\n", part1);
 }
