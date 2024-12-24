@@ -34,70 +34,18 @@ long long setBit(long long num, int index) {
   return num | (1LL << index);
 }
 
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    printf("[ERROR] Missing parameter <filename>\n");
-    exit(EXIT_FAILURE);
-  }
-
-  char *filename = argv[1];
-
-  FILE *fp = NULL;
-  if ((fp = fopen(filename, "r")) == NULL) {
-      printf("[ERROR] Failed to open file %s\n", filename);
-      exit(EXIT_FAILURE);
-  }
-  
-  struct node nodes[NODELIM];
-  int nodeCount = 0;
-  struct gate gates[256];
-  int gateCount = 0;
-
-  char line[32];
-  int mode = 0;
-  while(fgets(line, 32, fp)) {
-    if (strlen(line) <= 1) {
-      mode = 1;
-    } else {
-      if (mode == 0) {
-        char name[4];
-        int value;
-        sscanf(line, "%3s: %d", name, &value);
-        strcpy(nodes[nodeCount].name, name);
-        nodes[nodeCount++].value = value;
-      } else {
-        char *token = strtok(line, "-");
-        char *rest = token;
-        char *segment;
-        int c = 0;
-        while ((segment = strtok_r(rest, " ", &rest))) {
-          if (c == 0) {
-            strcpy(gates[gateCount].a, segment);
-          } else if (c == 1) {
-            if (strcmp(segment, "AND") == 0) {
-              gates[gateCount].type = 0;
-            } else if (strcmp(segment, "OR") == 0) {
-              gates[gateCount].type = 1;
-            } else if (strcmp(segment, "XOR") == 0) {
-              gates[gateCount].type = 2;
-            } else {
-              printf("Unknown type: '%s'\n", segment);
-              exit(EXIT_FAILURE);
-            }
-          } else {
-            strcpy(gates[gateCount].b, segment);
-          }
-          c++;
-        }
-        token = strtok(NULL, " ");
-        token = strtok(NULL, " \n");
-        gates[gateCount].evaluated = 0;
-        strcpy(gates[gateCount++].res, token);
-      }
+long long getValue(struct node nodes[NODELIM], int nodeCount, char prefix) {
+  long long value;
+  for (int i = 0; i < nodeCount; i++) {
+    if (nodes[i].name[0] == prefix && nodes[i].value) {
+      int index = atoi(&nodes[i].name[1]);
+      value = setBit(value, index);
     }
   }
-  fclose(fp);
+  return value;
+}
 
+long long run(struct node nodes[NODELIM], int nodeCount, struct gate gates[256], int gateCount) {
   int found = 1;
   while (found) {
     found = 0;
@@ -142,15 +90,77 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  qsort(nodes, nodeCount, sizeof(struct node), compareNodes);
+  return getValue(nodes, nodeCount, 'z');
+}
 
-  long long part1 = 0;
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    printf("[ERROR] Missing parameter <filename>\n");
+    exit(EXIT_FAILURE);
+  }
 
-  for (int i = 0; i < nodeCount; i++) {
-    if (nodes[i].name[0] == 'z' && nodes[i].value) {
-      int index = atoi(&nodes[i].name[1]);
-      part1 = setBit(part1, index);
+  char *filename = argv[1];
+
+  FILE *fp = NULL;
+  if ((fp = fopen(filename, "r")) == NULL) {
+      printf("[ERROR] Failed to open file %s\n", filename);
+      exit(EXIT_FAILURE);
+  }
+  
+  struct node initialNodes[NODELIM];
+  int nodeCount = 0;
+  struct gate initialGates[256];
+  int gateCount = 0;
+
+  char line[32];
+  int mode = 0;
+  while(fgets(line, 32, fp)) {
+    if (strlen(line) <= 1) {
+      mode = 1;
+    } else {
+      if (mode == 0) {
+        char name[4];
+        int value;
+        sscanf(line, "%3s: %d", name, &value);
+        strcpy(initialNodes[nodeCount].name, name);
+        initialNodes[nodeCount++].value = value;
+      } else {
+        char *token = strtok(line, "-");
+        char *rest = token;
+        char *segment;
+        int c = 0;
+        while ((segment = strtok_r(rest, " ", &rest))) {
+          if (c == 0) {
+            strcpy(initialGates[gateCount].a, segment);
+          } else if (c == 1) {
+            if (strcmp(segment, "AND") == 0) {
+              initialGates[gateCount].type = 0;
+            } else if (strcmp(segment, "OR") == 0) {
+              initialGates[gateCount].type = 1;
+            } else if (strcmp(segment, "XOR") == 0) {
+              initialGates[gateCount].type = 2;
+            } else {
+              printf("Unknown type: '%s'\n", segment);
+              exit(EXIT_FAILURE);
+            }
+          } else {
+            strcpy(initialGates[gateCount].b, segment);
+          }
+          c++;
+        }
+        token = strtok(NULL, " ");
+        token = strtok(NULL, " \n");
+        initialGates[gateCount].evaluated = 0;
+        strcpy(initialGates[gateCount++].res, token);
+      }
     }
   }
-  printf("Part 1: %lld\n", part1);
+  fclose(fp);
+
+
+  struct node nodes[NODELIM];
+  memcpy(nodes, initialNodes, sizeof(struct node) * NODELIM);
+  struct gate gates[256];
+  memcpy(gates, initialGates, sizeof(struct gate) * 256);
+  printf("Part 1: %lld\n", run(nodes, nodeCount, gates, gateCount));
 }
