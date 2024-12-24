@@ -1,0 +1,15 @@
+z09 is wrong
+z20 is wrong
+z24 is wrong
+z32 is wrong
+
+
+z09 and rkf (!)
+
+z20 and jgb (!)
+
+rrs, rvc (!)
+
+vcg and z24 (!)
+
+jgb,rkf,rrs,rvc,vcg,z09,z20,z24
