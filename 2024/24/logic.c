@@ -51,6 +51,38 @@ void swap(struct gate* a, struct gate* b) {
   strcpy(b->res, tmp);
 }
 
+void dotFile(struct node nodes[NODELIM], int nodeCount, struct gate gates[256], int gateCount) {
+  FILE *fp = NULL;
+  if ((fp = fopen("dotfile.dot", "w")) == NULL) {
+      exit(EXIT_FAILURE);
+  }
+  
+  fprintf(fp, "digraph G {\n");
+  for (int i = 0; i < gateCount; i++) {
+    char label[16] = {0};
+    switch (gates[i].type) {
+      case 0:
+        sprintf(label, "AND (%d)", i);
+        break;
+      case 1:
+        sprintf(label, "OR (%d)", i);
+        break;
+      case 2:
+        sprintf(label, "XOR (%d)", i);
+        break;
+      default:
+        printf("wat");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(fp, "    %s -> %s [label=\"%s\"]\n", gates[i].a, gates[i].res, label);
+    fprintf(fp, "    %s -> %s [label=\"%s\"]\n", gates[i].b, gates[i].res, label);
+  }
+
+  fprintf(fp, "}\n");
+
+  fclose(fp);
+}
+
 long long run(struct node nodes[NODELIM], int nodeCount, struct gate gates[256], int gateCount) {
   int found = 1;
   while (found) {
@@ -171,48 +203,5 @@ int main(int argc, char *argv[]) {
   printf("Part 1: %lld\n", run(nodes, nodeCount, gates, gateCount));
 
   long long desiredResult = getValue(initialNodes, nodeCount, 'x') + getValue(initialNodes, nodeCount, 'y');
-  for (int a = 0; a < nodeCount; a++) {
-    for (int b = a+1; b < nodeCount; b++) {
-      for (int c = b+1; c < nodeCount; c++) {
-        for (int d = c+1; d < nodeCount; d++) {
-          for (int e = d+1; e < nodeCount; e++) {
-            for (int f = e+1; f < nodeCount; f++) {
-              for (int g = f+1; g < nodeCount; g++) {
-                for (int h = g+1; h < nodeCount; h++) {
-                  memcpy(nodes, initialNodes, sizeof(struct node) * NODELIM);
-                  memcpy(gates, initialGates, sizeof(struct gate) * 256);
-
-                  swap(&gates[a], &gates[b]);
-                  swap(&gates[c], &gates[d]);
-                  swap(&gates[e], &gates[f]);
-                  swap(&gates[g], &gates[h]);
-
-                  if (run(nodes, nodeCount, gates, gateCount) == desiredResult) {
-                    char resultNames[8][4];
-                    strcpy(resultNames[0], gates[a].res);
-                    strcpy(resultNames[1], gates[b].res);
-                    strcpy(resultNames[2], gates[c].res);
-                    strcpy(resultNames[3], gates[d].res);
-                    strcpy(resultNames[4], gates[e].res);
-                    strcpy(resultNames[5], gates[f].res);
-                    strcpy(resultNames[6], gates[g].res);
-                    strcpy(resultNames[7], gates[h].res);
-                    qsort(resultNames, 8, 4, compareStrings);
-
-                    printf("Part 2: ");
-                    for (int i = 0; i < 8; i++) {
-                      if (i > 0) printf(",");
-                      printf("%s", resultNames[i]);
-                    }
-                    printf("\n");
-                    exit(EXIT_SUCCESS);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  dotFile(initialNodes, nodeCount, initialGates, gateCount);
 }
