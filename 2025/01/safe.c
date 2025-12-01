@@ -27,22 +27,13 @@ int main(int argc, char *argv[]) {
 
   char line[8];
   while(fgets(line, 8, fp)) {
-    char dir;
+    char direction;
     int distance;
-    sscanf(line, "%c%d", &dir, &distance);
+    sscanf(line, "%c%d", &direction, &distance);
 
-    if (dir == 'L') {
-      while (distance > 0) {
-        distance--;
-        dial--;
-        if (mod(dial, 100) == 0) part2++;
-      }
-    } else if (dir == 'R') {
-      while (distance > 0) {
-        distance--;
-        dial++;
-        if (mod(dial, 100) == 0) part2++;
-      }
+    while (distance-- > 0) {
+      dial += 2 * (direction == 'R') - 1;
+      if (mod(dial, 100) == 0) part2++;
     }
     if (mod(dial, 100) == 0) part1++;
   }
