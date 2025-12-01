@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
 
   int dial = 50;
   int part1 = 0;
+  int part2 = 0;
 
   char line[8];
   while(fgets(line, 8, fp)) {
@@ -31,13 +32,22 @@ int main(int argc, char *argv[]) {
     sscanf(line, "%c%d", &dir, &distance);
 
     if (dir == 'L') {
-      dial -= distance;
+      while (distance > 0) {
+        distance--;
+        dial--;
+        if (mod(dial, 100) == 0) part2++;
+      }
     } else if (dir == 'R') {
-      dial += distance;
+      while (distance > 0) {
+        distance--;
+        dial++;
+        if (mod(dial, 100) == 0) part2++;
+      }
     }
     if (mod(dial, 100) == 0) part1++;
   }
   fclose(fp);
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
