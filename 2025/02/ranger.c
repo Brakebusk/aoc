@@ -2,7 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-int isInvalid(long long id) {
+long long get(char digits[20], int l, int o) {
+  char slice[10] = {0};
+  memcpy(slice, &digits[o], sizeof(char) * l);
+  return atoll(slice);
+}
+
+int isSimpleInvalid(long long id) {
   char digits[20] = {0};
   sprintf(digits, "%lld", id);
   size_t length = strlen(digits);
@@ -14,6 +20,30 @@ int isInvalid(long long id) {
   }
   
   return 1;
+}
+
+int isSillyInvalid(long long id) {
+  char digits[20] = {0};
+  sprintf(digits, "%lld", id);
+  size_t length = strlen(digits);
+
+  for (int l = 1; l <= length / 2; l++) {
+    if (length % l) continue;
+
+    int invalid = 1;
+    long long target = get(digits, l, 0);
+
+    for (int o = l; o < length; o += l) {
+      long long compare = get(digits, l, o);
+      if (target != compare) {
+        invalid = 0;
+        break;
+      }
+    }
+
+    if (invalid) return 1;
+  }
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -35,6 +65,7 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   long long part1 = 0;
+  long long part2 = 0;
 
   char *token = strtok(line, ",");
   do {
@@ -42,9 +73,11 @@ int main(int argc, char *argv[]) {
     sscanf(token, "%lld-%lld", &min, &max);
 
     for (long long id = min; id <= max; id++) {
-      if (isInvalid(id)) part1 += id;
+      if (isSimpleInvalid(id)) part1 += id;
+      if (isSillyInvalid(id)) part2 += id;
     }
   } while ((token = strtok(NULL, ",")));
 
   printf("Part 1: %lld\n", part1);
+  printf("Part 2: %lld\n", part2);
 }
