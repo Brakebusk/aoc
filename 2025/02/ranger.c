@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-long long get(char digits[20], int l, int o) {
-  char slice[10] = {0};
-  memcpy(slice, &digits[o], sizeof(char) * l);
-  return atoll(slice);
-}
-
 int isSimpleInvalid(long long id) {
   char digits[20] = {0};
   sprintf(digits, "%lld", id);
@@ -31,11 +25,9 @@ int isSillyInvalid(long long id) {
     if (length % l) continue;
 
     int invalid = 1;
-    long long target = get(digits, l, 0);
 
     for (int o = l; o < length; o += l) {
-      long long compare = get(digits, l, o);
-      if (target != compare) {
+      if (strncmp(digits, &digits[o], l) != 0) {
         invalid = 0;
         break;
       }
