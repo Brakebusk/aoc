@@ -11,33 +11,31 @@ int max(int a, int b) {
 }
 
 int removeAccessible(char matrix[150][150], int size) {
-  int accessible = 0;
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
       if (matrix[r][c] == '@') {
         int neighbours = 0;
         for (int cr = max(r - 1, 0); cr <= min(r + 1, size - 1); cr++) {
           for (int cc = max(c - 1, 0); cc <= min(c + 1, size - 1); cc++) {
-            if (cr != r || cc != c) {
-              if (matrix[cr][cc] == '@' || matrix[cr][cc] == 'x' ) neighbours++;
-            }
+            if ((cr != r || cc != c) && (matrix[cr][cc] == '@' || matrix[cr][cc] == 'x')) neighbours++;
           }
         }
-        if (neighbours < 4) {
-          matrix[r][c] = 'x';
-          accessible++;
-        }
+        if (neighbours < 4) matrix[r][c] = 'x';
       }
     }
   }
-
+  
+  int accessible = 0;
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
-      if (matrix[r][c] == 'x') matrix[r][c] = '.';
+      if (matrix[r][c] == 'x') {
+        matrix[r][c] = '.';
+        accessible++;
+      }
     }
   }
-
   return accessible;
+
 }
 
 int main(int argc, char *argv[]) {
