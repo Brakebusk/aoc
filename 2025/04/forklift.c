@@ -10,6 +10,36 @@ int max(int a, int b) {
   return a > b ? a : b;
 }
 
+int removeAccessible(char matrix[150][150], int size) {
+  int accessible = 0;
+  for (int r = 0; r < size; r++) {
+    for (int c = 0; c < size; c++) {
+      if (matrix[r][c] == '@') {
+        int neighbours = 0;
+        for (int cr = max(r - 1, 0); cr <= min(r + 1, size - 1); cr++) {
+          for (int cc = max(c - 1, 0); cc <= min(c + 1, size - 1); cc++) {
+            if (cr != r || cc != c) {
+              if (matrix[cr][cc] == '@' || matrix[cr][cc] == 'x' ) neighbours++;
+            }
+          }
+        }
+        if (neighbours < 4) {
+          matrix[r][c] = 'x';
+          accessible++;
+        }
+      }
+    }
+  }
+
+  for (int r = 0; r < size; r++) {
+    for (int c = 0; c < size; c++) {
+      if (matrix[r][c] == 'x') matrix[r][c] = '.';
+    }
+  }
+
+  return accessible;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -35,23 +65,14 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  int part1 = 0;
+  int part1 = removeAccessible(matrix, size);
 
-  for (int r = 0; r < size; r++) {
-    for (int c = 0; c < size; c++) {
-      if (matrix[r][c] == '@') {
-        int neighbours = 0;
-        for (int cr = max(r - 1, 0); cr <= min(r + 1, size - 1); cr++) {
-          for (int cc = max(c - 1, 0); cc <= min(c + 1, size - 1); cc++) {
-            if (cr != r || cc != c) {
-              if (matrix[cr][cc] == '@') neighbours++;
-            }
-          }
-        }
-        if (neighbours < 4) part1++;
-      }
-    }
+  int part2 = part1;
+  int removed;
+  while ((removed = removeAccessible(matrix, size))) {
+    part2 += removed;
   }
 
   printf("Part 1: %d\n", part1);
+  printf("Part 2: %d\n", part2);
 }
