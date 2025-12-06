@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
   }
 
   int matrix[4][1000];
+  char columns[5][4000];
   int rc = 0;
 
   long long part1 = 0;
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
   char line[4000];
   int mode = 1;
   while(fgets(line, 4000, fp)) {
+    strcpy(columns[rc], line);
     char *token = strtok(line, " ");
     int cols = 0;
     do {
@@ -45,9 +47,43 @@ int main(int argc, char *argv[]) {
         }
       }
     } while ((token = strtok(NULL, " \n")));
-    rc++;
+    if (mode == 1) rc++;
   }
   fclose(fp);
 
   printf("Part 1: %lld\n", part1);
+
+  long long part2 = 0;
+
+  int components[8] = {0};
+  int componentCount = 0;
+  for (int c = strlen(columns[0]) - 2; c > -1; c--) {
+    int allSpace = 1;
+    char digits[8] = {0};
+    int dc = 0;
+    for (int r = 0; r < rc; r++) {
+      if (columns[r][c] != ' ') {
+        allSpace = 0;
+        digits[dc++] = columns[r][c];
+      }
+    }
+    if (!allSpace) {
+      components[componentCount++] = atoi(digits);
+      if (columns[rc][c] == '+') {
+        for (int comp = 0; comp < componentCount; comp++) {
+          part2 += components[comp];
+        }
+        componentCount = 0;
+      } else if (columns[rc][c] == '*') {
+        long long product = 1;
+        for (int comp = 0; comp < componentCount; comp++) {
+          product *= components[comp];
+        }
+        part2 += product;
+        componentCount = 0;
+      }
+    }
+  }
+
+  printf("Part 2: %lld\n", part2);
 }
