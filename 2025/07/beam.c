@@ -6,15 +6,12 @@ long long countPaths(char matrix[150][150], long long cache[150][150], int size,
   if (cache[r][c]) return cache[r][c];
   if (r+1 == size) return 1;
   if (matrix[r+1][c] == '.') {
-    cache[r+1][c] = countPaths(matrix, cache, size, r+1, c);
-    return cache[r+1][c];
+    return (cache[r+1][c] = countPaths(matrix, cache, size, r+1, c));
   }
   if (matrix[r+1][c] == '^') {
-    cache[r+1][c-1] = countPaths(matrix, cache, size, r+1, c-1);
-    cache[r+1][c+1] = countPaths(matrix, cache, size, r+1, c+1);
-    return cache[r+1][c-1] + cache[r+1][c+1];
+    return (cache[r+1][c-1] = countPaths(matrix, cache, size, r+1, c-1)) + 
+           (cache[r+1][c+1] = countPaths(matrix, cache, size, r+1, c+1));
   }
-  printf("Invalid character encountered: %c\n", matrix[r+1][c]);
   exit(EXIT_FAILURE);
 } 
 
