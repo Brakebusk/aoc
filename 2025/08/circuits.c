@@ -83,20 +83,14 @@ int main(int argc, char *argv[]) {
 
   for (int a = 0; a < jc; a++) {
     for (int b = 0; b < jc; b++) {
-      if (a != b) {
-        distances[a][b] = getDistance(junctions[a], junctions[b]);
-      } else distances[a][b] = 0;
+      distances[a][b] = getDistance(junctions[a], junctions[b]);
     }
   }
 
-  for (int r = 0; r < rounds; r++) {
-    makeNextConnection(junctions, jc, distances);
-  }
+  for (int r = 0; r < rounds; r++) makeNextConnection(junctions, jc, distances);
 
   int lengths[1024] = {0};
-  for (int j = 0; j < jc; j++) {
-    lengths[junctions[j].circuit]++;
-  }
+  for (int j = 0; j < jc; j++) lengths[junctions[j].circuit]++;
   qsort(lengths, 1024, sizeof(int), compare);
 
   int part1 = lengths[0] * lengths[1] * lengths[2];
