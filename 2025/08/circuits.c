@@ -24,6 +24,41 @@ int compare(const void* a, const void* b) {
    return (*(int*)b - *(int*)a);
 }
 
+int makeNextConnection(struct circuit* circuits, int cc, struct junction junctions[1024], int jc, long long *distances[1024]) {
+  long long minDistance = LLONG_MAX;
+  int selectedA, selectedB;
+  for (int a = 0; a < jc; a++) {
+    for (int b = 0; b < jc; b++) {
+      if (distances[a][b] != 0 && minDistance > distances[a][b]) {
+        minDistance = distances[a][b];
+        selectedA = a;
+        selectedB = b;
+      }
+    }
+  }
+
+  distances[selectedA][selectedB] = 0;
+  distances[selectedB][selectedA] = 0;
+  int aCircuit, bCircuit;
+  for (int c = 0; c < cc; c++) {
+    for (int j = 0; j < circuits[c].length; j++) {
+      if (circuits[c].junctionIndexes[j] == selectedA) aCircuit = c;
+      if (circuits[c].junctionIndexes[j] == selectedB) bCircuit = c;
+    }
+  }
+  if (aCircuit != bCircuit) {
+    memcpy(&circuits[aCircuit].junctionIndexes[circuits[aCircuit].length], circuits[bCircuit].junctionIndexes, sizeof(int) * circuits[bCircuit].length);
+    circuits[aCircuit].length += circuits[bCircuit].length;
+    circuits[bCircuit].length = 0;
+
+    for (int c = 0; c < cc; c++) {
+      if (circuits[c].length && circuits[c].length < jc) return 0;
+      if (circuits[c].length == jc) return junctions[selectedA].x * junctions[selectedB].x;
+    }
+  }
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -64,32 +99,7 @@ int main(int argc, char *argv[]) {
   }
 
   for (int r = 0; r < rounds; r++) {
-    long long minDistance = LLONG_MAX;
-    int selectedA, selectedB;
-    for (int a = 0; a < jc; a++) {
-      for (int b = 0; b < jc; b++) {
-        if (distances[a][b] != 0 && minDistance > distances[a][b]) {
-          minDistance = distances[a][b];
-          selectedA = a;
-          selectedB = b;
-        }
-      }
-    }
-
-    distances[selectedA][selectedB] = 0;
-    distances[selectedB][selectedA] = 0;
-    int aCircuit, bCircuit;
-    for (int c = 0; c < cc; c++) {
-      for (int j = 0; j < circuits[c].length; j++) {
-        if (circuits[c].junctionIndexes[j] == selectedA) aCircuit = c;
-        if (circuits[c].junctionIndexes[j] == selectedB) bCircuit = c;
-      }
-    }
-    if (aCircuit != bCircuit) {
-      memcpy(&circuits[aCircuit].junctionIndexes[circuits[aCircuit].length], circuits[bCircuit].junctionIndexes, sizeof(int) * circuits[bCircuit].length);
-      circuits[aCircuit].length += circuits[bCircuit].length;
-      circuits[bCircuit].length = 0;
-    }
+    makeNextConnection(circuits, cc, junctions, jc, distances);
   }
 
   int lengths[1024] = {0};
@@ -100,4 +110,10 @@ int main(int argc, char *argv[]) {
 
   int part1 = lengths[0] * lengths[1] * lengths[2];
   printf("Part 1: %d\n", part1);
+
+  int part2;
+  while (!(part2 = makeNextConnection(circuits, cc, junctions, jc, distances))) {
+    continue;
+  }
+  printf("Part 2: %d\n", part2);
 }
