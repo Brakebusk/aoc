@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     int selectedA, selectedB;
     for (int a = 0; a < jc; a++) {
       for (int b = 0; b < jc; b++) {
-        if (distances[a][b] != 0.0 && minDistance > distances[a][b]) {
+        if (distances[a][b] != 0 && minDistance > distances[a][b]) {
           minDistance = distances[a][b];
           selectedA = a;
           selectedB = b;
