@@ -4,12 +4,7 @@
 #include <limits.h>
 
 struct junction {
-  int x, y, z;
-};
-
-struct circuit {
-  int length;
-  int junctionIndexes[1024];
+  int x, y, z, circuit;
 };
 
 long long square(long long n) {
@@ -24,7 +19,7 @@ int compare(const void* a, const void* b) {
    return (*(int*)b - *(int*)a);
 }
 
-int makeNextConnection(struct circuit* circuits, int cc, struct junction junctions[1024], int jc, long long *distances[1024]) {
+int makeNextConnection(struct junction junctions[1024], int jc, long long *distances[1024]) {
   long long minDistance = LLONG_MAX;
   int selectedA, selectedB;
   for (int a = 0; a < jc; a++) {
@@ -39,22 +34,20 @@ int makeNextConnection(struct circuit* circuits, int cc, struct junction junctio
 
   distances[selectedA][selectedB] = 0;
   distances[selectedB][selectedA] = 0;
-  int aCircuit, bCircuit;
-  for (int c = 0; c < cc; c++) {
-    for (int j = 0; j < circuits[c].length; j++) {
-      if (circuits[c].junctionIndexes[j] == selectedA) aCircuit = c;
-      if (circuits[c].junctionIndexes[j] == selectedB) bCircuit = c;
-    }
-  }
-  if (aCircuit != bCircuit) {
-    memcpy(&circuits[aCircuit].junctionIndexes[circuits[aCircuit].length], circuits[bCircuit].junctionIndexes, sizeof(int) * circuits[bCircuit].length);
-    circuits[aCircuit].length += circuits[bCircuit].length;
-    circuits[bCircuit].length = 0;
 
-    for (int c = 0; c < cc; c++) {
-      if (circuits[c].length && circuits[c].length < jc) return 0;
-      if (circuits[c].length == jc) return junctions[selectedA].x * junctions[selectedB].x;
+  if (junctions[selectedA].circuit != junctions[selectedB].circuit) {
+    int migrateFrom = junctions[selectedB].circuit;
+    int migrateTo = junctions[selectedA].circuit;
+    int equalCount = 0;
+    
+    for (int j = 0; j < jc; j++) {
+      if (junctions[j].circuit == migrateFrom) {
+        junctions[j].circuit = migrateTo;
+        equalCount++;
+      } else if (junctions[j].circuit == migrateTo) equalCount++;
     }
+    
+    if (equalCount == jc) return junctions[selectedA].x * junctions[selectedB].x;
   }
   return 0;
 }
@@ -75,17 +68,15 @@ int main(int argc, char *argv[]) {
   }
 
   struct junction junctions[1024];
-  struct circuit* circuits = malloc(sizeof(struct circuit) * 1024);
-  int cc = 0;
+  int jc = 0;
 
   char line[24];
   while(fgets(line, 24, fp)) {
-    sscanf(line, "%d,%d,%d", &junctions[cc].x, &junctions[cc].y, &junctions[cc].z);
-    circuits[cc].junctionIndexes[0] = cc;
-    circuits[cc++].length = 1;
+    sscanf(line, "%d,%d,%d", &junctions[jc].x, &junctions[jc].y, &junctions[jc].z);
+    junctions[jc].circuit = jc;
+    jc++;
   }
   fclose(fp);
-  int jc = cc;
 
   long long *distances[1024];
   for (int d = 0; d < 1024; d++) distances[d] = malloc(sizeof(long long) * 1024);
@@ -99,20 +90,20 @@ int main(int argc, char *argv[]) {
   }
 
   for (int r = 0; r < rounds; r++) {
-    makeNextConnection(circuits, cc, junctions, jc, distances);
+    makeNextConnection(junctions, jc, distances);
   }
 
   int lengths[1024] = {0};
-  for (int c = 0; c < cc; c++) {
-    lengths[c] = circuits[c].length;
+  for (int j = 0; j < jc; j++) {
+    lengths[junctions[j].circuit]++;
   }
-  qsort(lengths, cc, sizeof(int), compare);
+  qsort(lengths, 1024, sizeof(int), compare);
 
   int part1 = lengths[0] * lengths[1] * lengths[2];
   printf("Part 1: %d\n", part1);
 
   int part2;
-  while (!(part2 = makeNextConnection(circuits, cc, junctions, jc, distances))) {
+  while (!(part2 = makeNextConnection(junctions, jc, distances))) {
     continue;
   }
   printf("Part 2: %d\n", part2);
