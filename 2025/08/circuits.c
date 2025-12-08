@@ -23,7 +23,7 @@ int makeNextConnection(struct junction junctions[1024], int jc, long long *dista
   long long minDistance = LLONG_MAX;
   int selectedA, selectedB;
   for (int a = 0; a < jc; a++) {
-    for (int b = 0; b < jc; b++) {
+    for (int b = a + 1; b < jc; b++) {
       if (distances[a][b] != 0 && minDistance > distances[a][b]) {
         minDistance = distances[a][b];
         selectedA = a;
@@ -33,7 +33,6 @@ int makeNextConnection(struct junction junctions[1024], int jc, long long *dista
   }
 
   distances[selectedA][selectedB] = 0;
-  distances[selectedB][selectedA] = 0;
 
   if (junctions[selectedA].circuit != junctions[selectedB].circuit) {
     int migrateFrom = junctions[selectedB].circuit;
@@ -82,7 +81,7 @@ int main(int argc, char *argv[]) {
   for (int d = 0; d < 1024; d++) distances[d] = malloc(sizeof(long long) * 1024);
 
   for (int a = 0; a < jc; a++) {
-    for (int b = 0; b < jc; b++) {
+    for (int b = a + 1; b < jc; b++) {
       distances[a][b] = getDistance(junctions[a], junctions[b]);
     }
   }
