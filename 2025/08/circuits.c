@@ -100,4 +100,6 @@ int main(int argc, char *argv[]) {
     continue;
   }
   printf("Part 2: %d\n", part2);
+
+  for (int d = 0; d < 1024; d++) free(distances[d]);
 }
