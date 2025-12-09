@@ -23,7 +23,7 @@ int makeNextConnection(struct junction junctions[1024], int jc, long long *dista
   long long minDistance = LLONG_MAX;
   int selectedA, selectedB;
   for (int a = 0; a < jc; a++) {
-    for (int b = 0; b < jc; b++) {
+    for (int b = a + 1; b < jc; b++) {
       if (distances[a][b] != 0 && minDistance > distances[a][b]) {
         minDistance = distances[a][b];
         selectedA = a;
@@ -33,7 +33,6 @@ int makeNextConnection(struct junction junctions[1024], int jc, long long *dista
   }
 
   distances[selectedA][selectedB] = 0;
-  distances[selectedB][selectedA] = 0;
 
   if (junctions[selectedA].circuit != junctions[selectedB].circuit) {
     int migrateFrom = junctions[selectedB].circuit;
@@ -82,21 +81,15 @@ int main(int argc, char *argv[]) {
   for (int d = 0; d < 1024; d++) distances[d] = malloc(sizeof(long long) * 1024);
 
   for (int a = 0; a < jc; a++) {
-    for (int b = 0; b < jc; b++) {
-      if (a != b) {
-        distances[a][b] = getDistance(junctions[a], junctions[b]);
-      } else distances[a][b] = 0;
+    for (int b = a + 1; b < jc; b++) {
+      distances[a][b] = getDistance(junctions[a], junctions[b]);
     }
   }
 
-  for (int r = 0; r < rounds; r++) {
-    makeNextConnection(junctions, jc, distances);
-  }
+  for (int r = 0; r < rounds; r++) makeNextConnection(junctions, jc, distances);
 
   int lengths[1024] = {0};
-  for (int j = 0; j < jc; j++) {
-    lengths[junctions[j].circuit]++;
-  }
+  for (int j = 0; j < jc; j++) lengths[junctions[j].circuit]++;
   qsort(lengths, 1024, sizeof(int), compare);
 
   int part1 = lengths[0] * lengths[1] * lengths[2];
@@ -107,4 +100,6 @@ int main(int argc, char *argv[]) {
     continue;
   }
   printf("Part 2: %d\n", part2);
+
+  for (int d = 0; d < 1024; d++) free(distances[d]);
 }
