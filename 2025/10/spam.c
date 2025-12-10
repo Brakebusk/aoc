@@ -49,8 +49,6 @@ struct test queueGet(struct queue *q) {
   return item;
 }
 
-uint16_t memo[MAX_MEMO];
-
 int hasSeen(uint16_t seen[MAX_MEMO], int sc, uint16_t state) {
   for (int i = 0; i < sc; i++) if (seen[i] == state) return 1;
   return 0;
@@ -79,7 +77,6 @@ int findCombo(struct machine m) {
 
     if (state == m.goal) {
       free(q);
-      printf("Got %d\n", t.depth);
       return t.depth;
     }
 
