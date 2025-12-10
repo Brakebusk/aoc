@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include "z3/z3.h"
 
 #define MAX_QUEUE_LENGTH 100000
 #define MAX_MEMO 1024
+
+// Compile: clang spam.c -lz3 -o spam
 
 uint16_t setBit(uint16_t num, int index) {
   return num | (1 << index);
@@ -22,6 +26,11 @@ struct test {
   int button, depth;
 };
 
+static Z3_ast makeSum(Z3_context ctx, Z3_ast zero, Z3_ast *terms, int count) {
+  if (count == 0) return zero;
+  if (count == 1) return terms[0];
+  return Z3_mk_add(ctx, count, terms);
+}
 
 struct queue {
   struct test items[MAX_QUEUE_LENGTH];
@@ -102,6 +111,62 @@ int findCombo(struct machine m) {
   return 0;
 }
 
+int findJoltageMin(struct machine *m) {
+  Z3_config cfg = Z3_mk_config();
+  Z3_context ctx = Z3_mk_context(cfg);
+  Z3_del_config(cfg);
+
+  Z3_optimize opt = Z3_mk_optimize(ctx);
+  Z3_optimize_inc_ref(ctx, opt);
+
+  Z3_sort intSort = Z3_mk_int_sort(ctx);
+  Z3_ast zero = Z3_mk_int(ctx, 0, intSort);
+
+  Z3_ast buttonVars[16];
+  for (int b = 0; b < m->bc; b++) {
+    char name[16];
+    snprintf(name, sizeof(name), "b_%d", b);
+    Z3_symbol sym = Z3_mk_string_symbol(ctx, name);
+    buttonVars[b] = Z3_mk_const(ctx, sym, intSort);
+    Z3_optimize_assert(ctx, opt, Z3_mk_ge(ctx, buttonVars[b], zero));
+  }
+
+  for (int j = 0; j < m->jc; j++) {
+    Z3_ast terms[16];
+    int tc = 0;
+    for (int b = 0; b < m->bc; b++) {
+      if (m->buttonMasks[b] & (1 << j)) {
+        terms[tc++] = buttonVars[b];
+      }
+    }
+    Z3_ast target = Z3_mk_int(ctx, m->joltages[j], intSort);
+    Z3_optimize_assert(ctx, opt, Z3_mk_eq(ctx, makeSum(ctx, zero, terms, tc), target));
+  }
+
+  Z3_ast totalPresses = makeSum(ctx, zero, buttonVars, m->bc);
+  Z3_optimize_minimize(ctx, opt, totalPresses);
+
+  Z3_optimize_check(ctx, opt, 0, NULL);
+
+  Z3_model model = Z3_optimize_get_model(ctx, opt);
+  Z3_model_inc_ref(ctx, model);
+
+  int presses = 0;
+  for (int b = 0; b < m->bc; b++) {
+    Z3_ast value;
+    Z3_model_eval(ctx, model, buttonVars[b], 1, &value);
+    int val;
+    Z3_get_numeral_int(ctx, value, &val);
+    presses += val;
+  }
+
+  Z3_model_dec_ref(ctx, model);
+  Z3_optimize_dec_ref(ctx, opt);
+  Z3_del_context(ctx);
+
+  return presses;
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     printf("[ERROR] Missing parameter <filename>\n");
@@ -155,4 +220,8 @@ int main(int argc, char *argv[]) {
   int part1 = 0;
   for (int i = 0; i < mc; i++) part1 += findCombo(machines[i]);
   printf("Part 1: %d\n", part1);
+
+  int part2 = 0;
+  for (int i = 0; i < mc; i++) part2 += findJoltageMin(&machines[i]);
+  printf("Part 2: %d\n", part2);
 }
