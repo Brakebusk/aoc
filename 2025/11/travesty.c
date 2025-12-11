@@ -15,7 +15,7 @@ int findDevice(struct device devices[600], int dc, char *name) {
   return -1;
 }
 
-long long countPaths(struct device devices[600], long long memo[600][4], int dc, int current, int goal, int dacIndex, int visitedDac, int fftIndex, int visitedFft) {
+long long countPaths(struct device devices[600], long long memo[600][4], int current, int goal, int dacIndex, int visitedDac, int fftIndex, int visitedFft) {
   if (current == goal) return visitedDac && visitedFft;
   
   int memoSubIndex = 2 * visitedDac + visitedFft;
@@ -23,7 +23,7 @@ long long countPaths(struct device devices[600], long long memo[600][4], int dc,
   
   long long paths = 0;
   for (int o = 0; o < devices[current].oc; o++) {
-    paths += countPaths(devices, memo, dc, devices[current].outputs[o], goal, dacIndex, visitedDac || current == dacIndex, fftIndex, visitedFft || current == fftIndex);
+    paths += countPaths(devices, memo, devices[current].outputs[o], goal, dacIndex, visitedDac || current == dacIndex, fftIndex, visitedFft || current == fftIndex);
   }
   memo[current][memoSubIndex] = paths;
   return paths;
@@ -77,11 +77,11 @@ int main(int argc, char *argv[]) {
   long long memo[600][4];
   for (int i = 0; i < 600; i++) for (int v = 0; v < 4; v++) memo[i][v] = -1;
 
-  long long part1 = countPaths(devices, memo, dc, youIndex, outIndex, dacIndex, 1, fftIndex, 1);
+  long long part1 = countPaths(devices, memo, youIndex, outIndex, dacIndex, 1, fftIndex, 1);
   printf("Part 1: %lld\n", part1);
 
   for (int i = 0; i < 600; i++) for (int v = 0; v < 4; v++) memo[i][v] = -1;
 
-  long long part2 = countPaths(devices, memo, dc, svrIndex, outIndex, dacIndex, 0, fftIndex, 0);
+  long long part2 = countPaths(devices, memo, svrIndex, outIndex, dacIndex, 0, fftIndex, 0);
   printf("Part 2: %lld\n", part2);
 }
