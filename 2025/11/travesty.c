@@ -15,13 +15,17 @@ int findDevice(struct device devices[600], int dc, char *name) {
   return -1;
 }
 
-int countPaths(struct device devices[600], int dc, int current, int goal) {
-  if (current == goal) return 1;
-
-  int paths = 0;
+long long countPaths(struct device devices[600], long long memo[600][4], int dc, int current, int goal, int dacIndex, int visitedDac, int fftIndex, int visitedFft) {
+  if (current == goal) return visitedDac && visitedFft;
+  
+  int memoSubIndex = 2 * visitedDac + visitedFft;
+  if (memo[current][memoSubIndex] > -1) return memo[current][memoSubIndex];
+  
+  long long paths = 0;
   for (int o = 0; o < devices[current].oc; o++) {
-    paths += countPaths(devices, dc, devices[current].outputs[o], goal);
+    paths += countPaths(devices, memo, dc, devices[current].outputs[o], goal, dacIndex, visitedDac || current == dacIndex, fftIndex, visitedFft || current == fftIndex);
   }
+  memo[current][memoSubIndex] = paths;
   return paths;
 }
 
@@ -64,13 +68,20 @@ int main(int argc, char *argv[]) {
   }
   fclose(fp);
 
-  int startIndex = findDevice(devices, dc, "you");
-  int endIndex = findDevice(devices, dc, "out");
-  if (startIndex == -1 || endIndex == -1) {
-    printf("Missing 'you' or 'out' devices!\n");
-    exit(EXIT_FAILURE);
-  }
+  int youIndex = findDevice(devices, dc, "you");
+  int svrIndex = findDevice(devices, dc, "svr");
+  int outIndex = findDevice(devices, dc, "out");
+  int dacIndex = findDevice(devices, dc, "dac");
+  int fftIndex = findDevice(devices, dc, "fft");
 
-  int part1 = countPaths(devices, dc, startIndex, endIndex);
-  printf("Part 1: %d\n", part1);
+  long long memo[600][4];
+  for (int i = 0; i < 600; i++) for (int v = 0; v < 4; v++) memo[i][v] = -1;
+
+  long long part1 = countPaths(devices, memo, dc, youIndex, outIndex, dacIndex, 1, fftIndex, 1);
+  printf("Part 1: %lld\n", part1);
+
+  for (int i = 0; i < 600; i++) for (int v = 0; v < 4; v++) memo[i][v] = -1;
+
+  long long part2 = countPaths(devices, memo, dc, svrIndex, outIndex, dacIndex, 0, fftIndex, 0);
+  printf("Part 2: %lld\n", part2);
 }
